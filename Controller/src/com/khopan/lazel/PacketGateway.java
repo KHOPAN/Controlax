@@ -23,6 +23,19 @@ public class PacketGateway {
 			Thread thread = new Thread(() -> {
 				while(true) {
 					try {
+						/*int available = this.inputStream.available();
+
+						if(available != 0) {
+							System.out.println("Available: " + available);
+							System.out.println("Code:" + this.inputStream.read());
+							byte[] data = this.inputStream.readNBytes(this.inputStream.available());
+							Packet packet = Packet.receive(data);
+
+							if(this.receiver != null) {
+								this.receiver.receivePacket(packet);
+							}
+						}*/
+
 						int available = this.inputStream.available();
 
 						if(available != 0) {
@@ -54,6 +67,21 @@ public class PacketGateway {
 		}
 
 		try {
+			/*byte[] data = packet.send();
+			System.out.println("Original: " + data.length);
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			int remaining = data.length;
+
+			while(remaining > 0) {
+				stream.write(0x1E);
+				int wrote = remaining > 65535 ? 65535 : remaining;
+				stream.write(data, data.length - remaining, wrote);
+				remaining -= wrote;
+			}
+
+			byte[] output = stream.toByteArray();
+			System.out.println("Added: " + output.length);
+			this.outputStream.write(output);*/
 			this.outputStream.write(packet.send());
 		} catch(Throwable Errors) {
 			throw new InternalError("Error while sending a packet", Errors);

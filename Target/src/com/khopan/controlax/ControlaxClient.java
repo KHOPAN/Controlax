@@ -1,18 +1,24 @@
 package com.khopan.controlax;
 
+import java.awt.Dimension;
 import java.awt.Frame;
 import java.awt.GridLayout;
+import java.awt.Rectangle;
 import java.awt.Robot;
+import java.awt.Toolkit;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.InetAddress;
 
+import javax.imageio.ImageIO;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JTextField;
@@ -25,12 +31,16 @@ import com.khopan.lazel.client.Client;
 import com.khopan.lazel.config.BinaryConfigObject;
 
 public class ControlaxClient {
+	private final Dimension screenDimension;
+	private final Robot robot;
+
 	private boolean stop;
 	private PacketGateway gateway;
 
-	private final Robot robot;
 
 	public ControlaxClient() {
+		this.screenDimension = Toolkit.getDefaultToolkit().getScreenSize();
+
 		try {
 			this.robot = new Robot();
 		} catch(Throwable Errors) {
@@ -105,6 +115,11 @@ public class ControlaxClient {
 		client.serverConnectionListener().set(gateway -> {
 			this.gateway = gateway;
 			this.gateway.packetReceiver().set(this :: processPacket);
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 0);
+			config.putInt("ScreenWidth", this.screenDimension.width);
+			config.putInt("ScreenHeight", this.screenDimension.height);
+			this.gateway.sendPacket(new Packet(config));
 		});
 
 		client.start();
@@ -117,7 +132,49 @@ public class ControlaxClient {
 
 			if(action == 1) {
 				this.processCommand(config);
+			} else if(action == 2) {
+				this.processScreenshot();
 			}
+		}
+	}
+
+	private void processScreenshot() {
+		try {
+			Rectangle bounds = new Rectangle();
+			bounds.x = 0;
+			bounds.y = 0;
+			bounds.width = this.screenDimension.width;
+			bounds.height = this.screenDimension.height;
+			BufferedImage screenshot = this.robot.createScreenCapture(bounds);
+			/*BufferedImage newType = new BufferedImage(this.screenDimension.width, this.screenDimension.height, BufferedImage.TYPE_BYTE_INDEXED);
+			Graphics2D Graphics = newType.createGraphics();
+			Graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
+			Graphics.drawImage(screenshot, 0, 0, null);
+			Graphics.dispose();*/
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			ImageIO.write(screenshot, "png", stream);
+			byte[] byteArray = stream.toByteArray();
+			int length = byteArray.length;
+			int packets = 0;
+
+			while(true) {
+				if(packets * 65536 >= length) {
+					break;
+				}
+
+				packets++;
+			}
+			
+			System.out.println("Length: " + length);
+			System.out.println("Packets: " + packets);
+		} catch(Throwable Errors) {
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter printWriter = new PrintWriter(stringWriter);
+			new InternalError("Client: Error while taking screenshot", Errors).printStackTrace(printWriter);
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 2);
+			config.putString("Message", stringWriter.toString());
+			this.gateway.sendPacket(new Packet(config));
 		}
 	}
 
