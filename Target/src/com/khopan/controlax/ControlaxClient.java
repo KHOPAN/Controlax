@@ -12,6 +12,7 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.image.BufferedImage;
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
@@ -146,11 +147,6 @@ public class ControlaxClient {
 			bounds.width = this.screenDimension.width;
 			bounds.height = this.screenDimension.height;
 			BufferedImage screenshot = this.robot.createScreenCapture(bounds);
-			/*BufferedImage newType = new BufferedImage(this.screenDimension.width, this.screenDimension.height, BufferedImage.TYPE_BYTE_INDEXED);
-			Graphics2D Graphics = newType.createGraphics();
-			Graphics.setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON);
-			Graphics.drawImage(screenshot, 0, 0, null);
-			Graphics.dispose();*/
 			ByteArrayOutputStream stream = new ByteArrayOutputStream();
 			ImageIO.write(screenshot, "png", stream);
 			byte[] byteArray = stream.toByteArray();
@@ -164,16 +160,27 @@ public class ControlaxClient {
 
 				packets++;
 			}
-			
-			System.out.println("Length: " + length);
-			System.out.println("Packets: " + packets);
+
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 2);
+			config.putBoolean("Error", false);
+			config.putInt("PacketSize", packets);
+			this.gateway.sendPacket(new Packet(config));
+			ByteArrayInputStream inputStream = new ByteArrayInputStream(byteArray);
+			int remaining = length;
+
+			for(int i = 0; i < packets; i++) {
+				this.gateway.sendPacket(new Packet(inputStream.readNBytes(remaining > 65536 ? 65536 : remaining)));
+				remaining -= 65536;
+			}
 		} catch(Throwable Errors) {
 			StringWriter stringWriter = new StringWriter();
 			PrintWriter printWriter = new PrintWriter(stringWriter);
 			new InternalError("Client: Error while taking screenshot", Errors).printStackTrace(printWriter);
 			BinaryConfigObject config = new BinaryConfigObject();
 			config.putInt("Action", 2);
-			config.putString("Message", stringWriter.toString());
+			config.putBoolean("Error", true);
+			config.putString("ErrorMessage", stringWriter.toString());
 			this.gateway.sendPacket(new Packet(config));
 		}
 	}

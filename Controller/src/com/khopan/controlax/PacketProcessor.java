@@ -18,7 +18,7 @@ public class PacketProcessor {
 			} else if(action == 1) {
 				ControlaxServer.INSTANCE.controlWindow.commandPanel.processCommand(config);
 			} else if(action == 2) {
-				ControlaxServer.INSTANCE.controlWindow.imagePanel.screenshotPanel.screenshotStatusPane.setText(config.getString("ErrorMessage"));
+				ControlaxServer.INSTANCE.controlWindow.imagePanel.screenshotPanel.processScreenshotPacket(config);
 			}
 		} else {
 			ControlaxServer.INSTANCE.controlWindow.imagePanel.screenshotPanel.processImagePacket(packet);

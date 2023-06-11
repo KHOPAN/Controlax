@@ -1,4 +1,4 @@
-package com.khopan.controlax;
+package com.khopan.controlax.ui.image;
 
 import java.awt.BorderLayout;
 import java.awt.Component;
@@ -10,9 +10,13 @@ import java.awt.image.BufferedImage;
 import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
+import com.khopan.controlax.ControlaxServer;
+
 public class ImageViewerPane {
 	private ImageViewerPane(BufferedImage image) {
-		System.out.println(image);
+		if(image == null) {
+			ControlaxServer.INSTANCE.controlWindow.imagePanel.screenshotPanel.screenshotStatusPane.setText("Cannot view the image because the image is null");
+		}
 
 		JFrame frame = new JFrame();
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);

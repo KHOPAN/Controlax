@@ -4,6 +4,7 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
@@ -15,7 +16,6 @@ import javax.swing.JTextPane;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.ControlaxServer;
-import com.khopan.controlax.ImageViewerPane;
 import com.khopan.lazel.Packet;
 import com.khopan.lazel.config.BinaryConfigObject;
 
@@ -27,6 +27,10 @@ public class ScreenshotPanel extends JPanel {
 	public final JButton viewScreenshotButton;
 
 	public BufferedImage screenshot;
+
+	private int packetSize;
+	private int packetCount;
+	private ByteArrayOutputStream stream;
 
 	public ScreenshotPanel() {
 		this.setBorder(new TitledBorder("Screenshot"));
@@ -59,7 +63,35 @@ public class ScreenshotPanel extends JPanel {
 	}
 
 	public void processImagePacket(Packet packet) {
-		System.out.println("Length: " + packet.getRawData().length);
+		this.packetCount++;
+
+		try {
+			this.stream.write(packet.getRawData());
+		} catch(Throwable Errors) {
+			Errors.printStackTrace();
+			StringWriter stringWriter = new StringWriter();
+			PrintWriter printWriter = new PrintWriter(stringWriter);
+			new InternalError("Error while receiving image packets", Errors).printStackTrace(printWriter);
+			this.screenshotStatusPane.setText(stringWriter.toString());
+		}
+
+		if(this.packetCount >= this.packetSize) {
+			try {
+				this.screenshot = ImageIO.read(new ByteArrayInputStream(this.stream.toByteArray()));
+				this.screenshotStatusPane.setText("Screenshot Received Successfully");
+			} catch(Throwable Errors) {
+				Errors.printStackTrace();
+				StringWriter stringWriter = new StringWriter();
+				PrintWriter printWriter = new PrintWriter(stringWriter);
+				new InternalError("Error while reconstructing the image", Errors).printStackTrace(printWriter);
+				this.screenshotStatusPane.setText(stringWriter.toString());
+			}
+
+			this.packetCount = 0;
+			this.stream = new ByteArrayOutputStream();
+		}
+
+		/*System.out.println("Length: " + packet.getRawData().length);
 
 		try {
 			BufferedImage image = ImageIO.read(new ByteArrayInputStream(packet.getRawData()));
@@ -71,6 +103,17 @@ public class ScreenshotPanel extends JPanel {
 			PrintWriter printWriter = new PrintWriter(stringWriter);
 			new InternalError("Error while reconstructing the image", Errors).printStackTrace(printWriter);
 			this.screenshotStatusPane.setText(stringWriter.toString());
+		}*/
+
+	}
+
+	public void processScreenshotPacket(BinaryConfigObject config) {
+		if(config.getBoolean("Error")) {
+			this.screenshotStatusPane.setText(config.getString("ErrorMessage"));
+		} else {
+			this.packetSize = config.getInt("PacketSize");
+			this.packetCount = 0;
+			this.stream = new ByteArrayOutputStream();
 		}
 	}
 }
