@@ -5,9 +5,6 @@ import java.awt.GridLayout;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import com.khopan.lazel.Packet;
-import com.khopan.lazel.config.BinaryConfigObject;
-
 public class ImagePanel extends JPanel {
 	private static final long serialVersionUID = -2841650909096430604L;
 

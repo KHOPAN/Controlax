@@ -26,6 +26,7 @@ import javax.swing.JTextField;
 import javax.swing.UIManager;
 import javax.swing.WindowConstants;
 
+import com.khopan.controlax.ui.color.ColorDisplay;
 import com.khopan.lazel.Packet;
 import com.khopan.lazel.PacketGateway;
 import com.khopan.lazel.client.Client;
@@ -135,7 +136,29 @@ public class ControlaxClient {
 				this.processCommand(config);
 			} else if(action == 2) {
 				this.processScreenshot();
+			} else if(action == 3) {
+				this.processColor(config);
 			}
+		}
+	}
+
+	private void processColor(BinaryConfigObject config) {
+		int action = config.getInt("SubAction");
+
+		if(action == 0) {
+			ColorDisplay.clear();
+		} else if(action == 1) {
+			int color = config.getInt("Color");
+			float transparency = config.getFloat("Transparency");
+			ColorDisplay.transparency(transparency);
+			ColorDisplay.display(color);
+		} else if(action == 2) {
+			boolean moving = config.getBoolean("Moving");
+			float transparency = config.getFloat("Transparency");
+			float rate = config.getFloat("Rate");
+			ColorDisplay.transparency(transparency);
+			ColorDisplay.rainbowRate(rate);
+			ColorDisplay.rainbow(moving);
 		}
 	}
 

@@ -4,15 +4,19 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JPanel;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
+import com.khopan.controlax.ui.color.ColorPanel;
 import com.khopan.controlax.ui.command.CommandPanel;
 import com.khopan.controlax.ui.image.ImagePanel;
 
 public class ControlWindow {
 	public final JFrame frame;
+	public final ColorPanel colorPanel;
 	public final CommandPanel commandPanel;
 	public final ImagePanel imagePanel;
 
@@ -23,11 +27,23 @@ public class ControlWindow {
 		this.frame.setLayout(new BorderLayout());
 		JPanel panel = new JPanel();
 		panel.setBorder(new EmptyBorder(10, 10, 10, 10));
-		panel.setLayout(new GridLayout(2, 1));
+		panel.setLayout(new GridLayout(1, 2));
+		JPanel firstSubPanel = new JPanel();
+		firstSubPanel.setLayout(new GridLayout(2, 1));
+		this.colorPanel = new ColorPanel();
+		firstSubPanel.add(this.colorPanel);
+		JLabel unimplementedLabel = new JLabel();
+		unimplementedLabel.setText("NOT YET IMPLEMENTED");
+		unimplementedLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		firstSubPanel.add(unimplementedLabel);
+		panel.add(firstSubPanel);
+		JPanel secondSubPanel = new JPanel();
+		secondSubPanel.setLayout(new GridLayout(2, 1));
 		this.commandPanel = new CommandPanel();
-		panel.add(this.commandPanel);
+		secondSubPanel.add(this.commandPanel);
 		this.imagePanel = new ImagePanel();
-		panel.add(this.imagePanel);
+		secondSubPanel.add(this.imagePanel);
+		panel.add(secondSubPanel);
 		this.frame.add(panel, BorderLayout.CENTER);
 		this.frame.setSize(600, 400);
 		this.frame.setLocationRelativeTo(null);
