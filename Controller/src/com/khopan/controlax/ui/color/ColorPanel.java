@@ -9,9 +9,9 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
-import com.khopan.controlax.ControlaxServer;
-import com.khopan.lazel.Packet;
+import com.khopan.controlax.Controlax;
 import com.khopan.lazel.config.BinaryConfigObject;
+import com.khopan.lazel.packet.BinaryConfigPacket;
 
 public class ColorPanel extends JPanel {
 	private static final long serialVersionUID = 8481946450479918410L;
@@ -26,7 +26,9 @@ public class ColorPanel extends JPanel {
 
 	public ColorPanel() {
 		this.setBorder(new TitledBorder("Color"));
-		this.setLayout(new GridLayout(7, 1));
+		this.setLayout(new GridLayout(1, 2));
+		JPanel fieldPanel = new JPanel();
+		fieldPanel.setLayout(new GridLayout(3, 1));
 		JPanel colorInputPanel = new JPanel();
 		colorInputPanel.setLayout(new GridLayout(1, 2));
 		JLabel colorInputLabel = new JLabel();
@@ -35,7 +37,7 @@ public class ColorPanel extends JPanel {
 		colorInputPanel.add(colorInputLabel);
 		this.colorInputField = new JTextField();
 		colorInputPanel.add(this.colorInputField);
-		this.add(colorInputPanel);
+		fieldPanel.add(colorInputPanel);
 		JPanel transparencyInputPanel = new JPanel();
 		transparencyInputPanel.setLayout(new GridLayout(1, 2));
 		JLabel transparencyInputLabel = new JLabel();
@@ -44,12 +46,25 @@ public class ColorPanel extends JPanel {
 		transparencyInputPanel.add(transparencyInputLabel);
 		this.transparencyInputField = new JTextField();
 		transparencyInputPanel.add(this.transparencyInputField);
-		this.add(transparencyInputPanel);
+		fieldPanel.add(transparencyInputPanel);
+		JPanel movingRainbowRateInputPanel = new JPanel();
+		movingRainbowRateInputPanel.setLayout(new GridLayout(1, 2));
+		JLabel movingRainbowRateInputLabel = new JLabel();
+		movingRainbowRateInputLabel.setText("Rainbow Moving Rate:");
+		movingRainbowRateInputLabel.setHorizontalAlignment(SwingConstants.CENTER);
+		movingRainbowRateInputPanel.add(movingRainbowRateInputLabel);
+		this.movingRainbowRateInputField = new JTextField();
+		movingRainbowRateInputPanel.add(this.movingRainbowRateInputField);
+		fieldPanel.add(movingRainbowRateInputPanel);
+		this.add(fieldPanel);
+
+		JPanel buttonPanel = new JPanel();
+		buttonPanel.setLayout(new GridLayout(4, 1));
 		this.sendColorButton = new JButton();
 		this.sendColorButton.setText("Send Color");
 		this.sendColorButton.addActionListener(Event -> {
 			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 3);
+			config.putInt("Action", 6);
 			config.putInt("SubAction", 1);
 			int color;
 
@@ -63,7 +78,7 @@ public class ColorPanel extends JPanel {
 				color = 0xFFFFFF;
 			}
 
-			this.colorInputField.setText(Integer.toString(color));
+			this.colorInputField.setText(String.format("%02x%02x%02x", (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF).toUpperCase());
 			float transparency;
 
 			try {
@@ -79,34 +94,25 @@ public class ColorPanel extends JPanel {
 			this.transparencyInputField.setText(Float.toString(transparency));
 			config.putInt("Color", color);
 			config.putFloat("Transparency", transparency);
-			ControlaxServer.INSTANCE.gateway.sendPacket(new Packet(config));
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		this.add(this.sendColorButton);
+		buttonPanel.add(this.sendColorButton);
 		this.clearButton = new JButton();
 		this.clearButton.setText("Clear Color");
 		this.clearButton.addActionListener(Event -> {
 			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 3);
+			config.putInt("Action", 6);
 			config.putInt("SubAction", 0);
-			ControlaxServer.INSTANCE.gateway.sendPacket(new Packet(config));
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		this.add(this.clearButton);
-		JPanel movingRainbowRateInputPanel = new JPanel();
-		movingRainbowRateInputPanel.setLayout(new GridLayout(1, 2));
-		JLabel movingRainbowRateInputLabel = new JLabel();
-		movingRainbowRateInputLabel.setText("Rainbow Moving Rate:");
-		movingRainbowRateInputLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		movingRainbowRateInputPanel.add(movingRainbowRateInputLabel);
-		this.movingRainbowRateInputField = new JTextField();
-		movingRainbowRateInputPanel.add(this.movingRainbowRateInputField);
-		this.add(movingRainbowRateInputPanel);
+		buttonPanel.add(this.clearButton);
 		this.movingRainbowButton = new JButton();
 		this.movingRainbowButton.setText("Moving Rainbow");
 		this.movingRainbowButton.addActionListener(Event -> {
 			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 3);
+			config.putInt("Action", 6);
 			config.putInt("SubAction", 2);
 			config.putBoolean("Moving", true);
 			float transparency;
@@ -133,15 +139,15 @@ public class ColorPanel extends JPanel {
 			this.movingRainbowRateInputField.setText(Float.toString(rate));
 			config.putFloat("Transparency", transparency);
 			config.putFloat("Rate", rate);
-			ControlaxServer.INSTANCE.gateway.sendPacket(new Packet(config));
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		this.add(this.movingRainbowButton);
+		buttonPanel.add(this.movingRainbowButton);
 		this.rainbowButton = new JButton();
 		this.rainbowButton.setText("Rainbow");
 		this.rainbowButton.addActionListener(Event -> {
 			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 3);
+			config.putInt("Action", 6);
 			config.putInt("SubAction", 2);
 			config.putBoolean("Moving", false);
 			float transparency;
@@ -159,9 +165,10 @@ public class ColorPanel extends JPanel {
 			this.transparencyInputField.setText(Float.toString(transparency));
 			config.putFloat("Transparency", transparency);
 			config.putFloat("Rate", 0.0001f);
-			ControlaxServer.INSTANCE.gateway.sendPacket(new Packet(config));
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		this.add(this.rainbowButton);
+		buttonPanel.add(this.rainbowButton);
+		this.add(buttonPanel);
 	}
 }

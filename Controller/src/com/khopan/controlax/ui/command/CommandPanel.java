@@ -15,24 +15,35 @@ import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
-import com.khopan.controlax.ControlaxServer;
-import com.khopan.lazel.Packet;
+import com.khopan.controlax.Controlax;
 import com.khopan.lazel.config.BinaryConfigObject;
+import com.khopan.lazel.packet.BinaryConfigPacket;
 
 public class CommandPanel extends JPanel {
 	private static final long serialVersionUID = -5085545801193268345L;
 
+	public final JTextPane commandOutputPane;
 	public final JTextField directoryField;
 	public final JTextField inputCommandField;
+	public final JButton sleepButton;
+	public final JButton shutdownButton;
+	public final JButton restartButton;
 	public final JButton sendCommandButton;
 	public final JButton clearOutputButton;
-	public final JTextPane commandOutputPane;
 
 	private int commandIdentifierCode;
 
 	public CommandPanel() {
 		this.setBorder(new TitledBorder("Command"));
-		this.setLayout(new GridLayout(2, 1));
+		this.setLayout(new GridLayout(1, 2));
+		JPanel outputPanel = new JPanel();
+		outputPanel.setBorder(new TitledBorder("Output"));
+		outputPanel.setLayout(new BorderLayout());
+		this.commandOutputPane = new JTextPane();
+		this.commandOutputPane.setEditable(false);
+		JScrollPane scrollPane = new JScrollPane(this.commandOutputPane);
+		outputPanel.add(scrollPane, BorderLayout.CENTER);
+		this.add(outputPanel);
 		JPanel controlPanel = new JPanel();
 		controlPanel.setBorder(new TitledBorder("Control"));
 		controlPanel.setLayout(new GridLayout(4, 1));
@@ -54,30 +65,58 @@ public class CommandPanel extends JPanel {
 		this.inputCommandField = new JTextField();
 		inputCommandPanel.add(this.inputCommandField);
 		controlPanel.add(inputCommandPanel);
-		this.sendCommandButton = new JButton();
-		this.sendCommandButton.setText("Send Command");
-		controlPanel.add(this.sendCommandButton);
-		this.clearOutputButton = new JButton();
-		this.clearOutputButton.setText("Clear Output Window");
-		controlPanel.add(this.clearOutputButton);
-		this.add(controlPanel);
-		JPanel outputPanel = new JPanel();
-		outputPanel.setBorder(new TitledBorder("Output"));
-		outputPanel.setLayout(new BorderLayout());
-		this.commandOutputPane = new JTextPane();
-		this.clearOutputButton.addActionListener(Event -> {
-			this.commandOutputPane.setText("");
+		JPanel systemActionPanel = new JPanel();
+		systemActionPanel.setLayout(new GridLayout(1, 3));
+		this.sleepButton = new JButton();
+		this.sleepButton.setText("Sleep");
+		this.sleepButton.addActionListener(Event -> {
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 2);
+			config.putInt("SubAction", 1);
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
+		systemActionPanel.add(this.sleepButton);
+		this.shutdownButton = new JButton();
+		this.shutdownButton.setText("Shutdown");
+		this.shutdownButton.addActionListener(Event -> {
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 2);
+			config.putInt("SubAction", 2);
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+		});
+
+		systemActionPanel.add(this.shutdownButton);
+		this.restartButton = new JButton();
+		this.restartButton.setText("Restart");
+		this.restartButton.addActionListener(Event -> {
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 2);
+			config.putInt("SubAction", 3);
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+		});
+
+		systemActionPanel.add(this.restartButton);
+		controlPanel.add(systemActionPanel);
+		JPanel actionPanel = new JPanel();
+		actionPanel.setLayout(new GridLayout(1, 2));
+		this.sendCommandButton = new JButton();
+		this.sendCommandButton.setText("Send Command");
 		this.sendCommandButton.addActionListener(Event -> {
 			this.commandOutputPane.setText("");
 			this.sendCommand();
 		});
 
-		this.commandOutputPane.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(this.commandOutputPane);
-		outputPanel.add(scrollPane, BorderLayout.CENTER);
-		this.add(outputPanel);
+		actionPanel.add(this.sendCommandButton);
+		this.clearOutputButton = new JButton();
+		this.clearOutputButton.setText("Clear Output Window");
+		this.clearOutputButton.addActionListener(Event -> {
+			this.commandOutputPane.setText("");
+		});
+
+		actionPanel.add(this.clearOutputButton);
+		controlPanel.add(actionPanel);
+		this.add(controlPanel);
 	}
 
 	private void sendCommand() {
@@ -97,11 +136,11 @@ public class CommandPanel extends JPanel {
 			config.putString("Directory", directory);
 			config.putString("Command", command);
 			config.putInt("IdentifierCode", this.commandIdentifierCode);
-			ControlaxServer.INSTANCE.gateway.sendPacket(new Packet(config));
+			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		} catch(Throwable Errors) {
 			StringWriter stringWriter = new StringWriter();
 			PrintWriter printWriter = new PrintWriter(stringWriter);
-			new InternalError("Error while send command", Errors).printStackTrace(printWriter);
+			new InternalError("Error while sending a command", Errors).printStackTrace(printWriter);
 			this.commandOutputPane.setText(stringWriter.toString());
 		}
 	}
