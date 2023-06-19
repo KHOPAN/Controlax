@@ -72,7 +72,7 @@ public class Controlax {
 		try {
 			return InetAddress.getLocalHost();
 		} catch(Throwable Errors) {
-			throw new InternalError("Cannot get host IP address", Errors);
+			throw new InternalError("Cannot get the host IP address", Errors);
 		}
 	}
 
