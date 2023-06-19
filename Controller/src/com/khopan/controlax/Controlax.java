@@ -10,6 +10,7 @@ import com.khopan.controlax.packet.HeaderedImagePacket;
 import com.khopan.controlax.ui.ControlWindow;
 import com.khopan.controlax.ui.image.ScreenshotPanel;
 import com.khopan.controlax.ui.image.StreamPanel;
+import com.khopan.controlax.ui.image.StreamRenderer;
 import com.khopan.lazel.client.Client;
 import com.khopan.lazel.config.BinaryConfigObject;
 import com.khopan.lazel.packet.BinaryConfigPacket;
@@ -23,6 +24,7 @@ public class Controlax {
 
 	public Controlax() {
 		this.addressInput = new IPInputWindow();
+		StreamRenderer.load();
 	}
 
 	public void addressEntered(InetAddress address) {
@@ -44,13 +46,9 @@ public class Controlax {
 				if(header == ScreenshotPanel.SCREENSHOT_HEADER) {
 					this.window.imagePanel.screenshotPanel.processImagePacket(imagePacket);
 				} else if(header == StreamPanel.STREAM_HEADER) {
-					this.window.imagePanel.streamPanel.processImagePacket(imagePacket);
+					StreamRenderer.INSTANCE.processPacket(imagePacket);
 				}
 			}
-		});
-
-		this.client.connectionResetListener().set(() -> {
-			System.exit(0);
 		});
 
 		this.client.start();

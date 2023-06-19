@@ -11,7 +11,6 @@ import javax.swing.JTextPane;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.Controlax;
-import com.khopan.controlax.packet.HeaderedImagePacket;
 import com.khopan.lazel.config.BinaryConfigObject;
 import com.khopan.lazel.packet.BinaryConfigPacket;
 
@@ -23,11 +22,8 @@ public class StreamPanel extends JPanel {
 	public final JTextPane streamStatusPane;
 	public final JButton startStreamButton;
 	public final JButton stopStreamButton;
-	public final JButton viewStreamButton;
 
 	public BufferedImage image;
-
-	private ImageViewerPane pane;
 
 	public StreamPanel() {
 		this.setBorder(new TitledBorder("Stream"));
@@ -41,7 +37,7 @@ public class StreamPanel extends JPanel {
 		statusPanel.add(statusScrollPane, BorderLayout.CENTER);
 		this.add(statusPanel);
 		JPanel controlPanel = new JPanel();
-		controlPanel.setLayout(new GridLayout(3, 1));
+		controlPanel.setLayout(new GridLayout(2, 1));
 		this.startStreamButton = new JButton();
 		this.startStreamButton.setText("Start Streaming");
 		this.startStreamButton.addActionListener(Event -> this.start());
@@ -50,11 +46,6 @@ public class StreamPanel extends JPanel {
 		this.stopStreamButton.setText("Stop Streaming");
 		this.stopStreamButton.addActionListener(Event -> this.stop());
 		controlPanel.add(this.stopStreamButton);
-		this.viewStreamButton = new JButton();
-		this.viewStreamButton.setText("View Video Stream");
-		this.viewStreamButton.setEnabled(false);
-		this.viewStreamButton.addActionListener(Event -> this.view());
-		controlPanel.add(this.viewStreamButton);
 		this.add(controlPanel);
 	}
 
@@ -65,7 +56,7 @@ public class StreamPanel extends JPanel {
 		config.putBoolean("Start", true);
 		config.putInt("Framerate", Controlax.getFramerate());
 		Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
-		this.viewStreamButton.setEnabled(true);
+		StreamRenderer.INSTANCE.start();
 	}
 
 	private void stop() {
@@ -74,18 +65,6 @@ public class StreamPanel extends JPanel {
 		config.putInt("Action", 4);
 		config.putBoolean("Start", false);
 		Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
-		this.viewStreamButton.setEnabled(false);
-	}
-
-	private void view() {
-		this.pane = ImageViewerPane.viewImage(this.image, "View Stream Images");
-	}
-
-	public void processImagePacket(HeaderedImagePacket packet) {
-		this.image = packet.getImage();
-
-		if(this.pane != null) {
-			this.pane.pane.updateImage(this.image);
-		}
+		StreamRenderer.INSTANCE.stop();
 	}
 }

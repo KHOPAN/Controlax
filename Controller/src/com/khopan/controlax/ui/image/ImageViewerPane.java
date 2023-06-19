@@ -12,22 +12,19 @@ import javax.swing.JFrame;
 import javax.swing.WindowConstants;
 
 public class ImageViewerPane {
-	public ImagePane pane;
-
 	private ImageViewerPane(BufferedImage image, String title) {
 		JFrame frame = new JFrame();
 		frame.setTitle(title);
 		frame.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		frame.setLayout(new BorderLayout());
-		this.pane = new ImagePane(image);
-		frame.add(this.pane);
+		frame.add(new ImagePane(image));
 		frame.setSize(600, 400);
 		frame.setLocationRelativeTo(null);
 		frame.setVisible(true);
 	}
 
-	public static ImageViewerPane viewImage(BufferedImage image, String title) {
-		return new ImageViewerPane(image, title);
+	public static void viewImage(BufferedImage image, String title) {
+		new ImageViewerPane(image, title);
 	}
 
 	public class ImagePane extends Component {
@@ -40,15 +37,6 @@ public class ImageViewerPane {
 
 		private ImagePane(BufferedImage image) {
 			this.image = image;
-		}
-
-		public void updateImage(BufferedImage image) {
-			this.image = image;
-
-			if(this.image != null) {
-				this.renderingImage = this.image.getScaledInstance(this.width, this.height, BufferedImage.SCALE_FAST);
-				this.repaint();
-			}
 		}
 
 		@SuppressWarnings("deprecation")

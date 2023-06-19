@@ -22,6 +22,7 @@ public class Controlax {
 
 	public Controlax() {
 		ImageProcessor.load();
+		StreamProcessor.load();
 		this.server = new Server();
 		this.server.port().set(2553);
 		this.server.address().set(Controlax.IP_ADDRESS);
@@ -31,10 +32,6 @@ public class Controlax {
 			this.processor.packetListener().set(packet -> {
 				BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
 				this.processAction(config.getObject());
-			});
-
-			this.processor.connectionResetListener().set(() -> {
-				System.exit(0);
 			});
 		});
 
@@ -59,7 +56,11 @@ public class Controlax {
 		} else if(action == 3) {
 			ImageProcessor.processScreenshot();
 		} else if(action == 4) {
-			ImageProcessor.processStream(config);
+			if(config.getBoolean("Start")) {
+				StreamProcessor.INSTANCE.start(config.getInt("Framerate"));
+			} else {
+				StreamProcessor.INSTANCE.stop();
+			}
 		} else if(action == 5) {
 			MessageProcessor.processMessage(config);
 		} else if(action == 6) {
