@@ -25,7 +25,7 @@ public class StreamProcessor {
 			if(this.start) {
 				this.frame++;
 				HeaderedImagePacket packet = new HeaderedImagePacket(ImageProcessor.takeScreenshot(), ImageProcessor.STREAM_HEADER, this.frame);
-				Controlax.INSTANCE.processor.sendPacket(packet);
+				Controlax.INSTANCE.sendPacket(packet);
 				/*boolean sent = false;
 				BufferedImage image = ImageProcessor.takeScreenshot();
 

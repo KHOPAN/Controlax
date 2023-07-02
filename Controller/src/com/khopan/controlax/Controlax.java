@@ -9,7 +9,6 @@ import javax.swing.UIManager;
 import com.khopan.controlax.packet.HeaderedImagePacket;
 import com.khopan.controlax.ui.ControlWindow;
 import com.khopan.controlax.ui.image.ScreenshotPanel;
-import com.khopan.controlax.ui.image.StreamPanel;
 import com.khopan.controlax.ui.image.StreamRenderer;
 import com.khopan.lazel.client.Client;
 import com.khopan.lazel.config.BinaryConfigObject;
@@ -24,7 +23,6 @@ public class Controlax {
 
 	public Controlax() {
 		this.addressInput = new IPInputWindow();
-		StreamRenderer.load();
 	}
 
 	public void addressEntered(InetAddress address) {
@@ -33,6 +31,11 @@ public class Controlax {
 		this.client.host().set(address.getHostAddress());
 		this.client.connectionListener().set(() -> {
 			this.window = new ControlWindow();
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 4);
+			config.putBoolean("Start", true);
+			config.putInt("Framerate", Controlax.getFramerate());
+			this.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		this.client.packetListener().set(packet -> {
@@ -44,9 +47,9 @@ public class Controlax {
 				byte header = imagePacket.getHeader();
 
 				if(header == ScreenshotPanel.SCREENSHOT_HEADER) {
-					this.window.imagePanel.screenshotPanel.processImagePacket(imagePacket);
-				} else if(header == StreamPanel.STREAM_HEADER) {
-					StreamRenderer.INSTANCE.processPacket(imagePacket);
+					this.window.screenshotPanel.processImagePacket(imagePacket);
+				} else if(header == StreamRenderer.STREAM_HEADER) {
+					this.window.streamRenderer.processPacket(imagePacket);
 				}
 			}
 		});
@@ -57,12 +60,14 @@ public class Controlax {
 	private void processAction(BinaryConfigObject config) {
 		int action = config.getInt("Action");
 
-		if(action == 1) {
+		if(action == -1) {
+			System.exit(0);
+		} else if(action == 1) {
 			this.window.commandPanel.processCommand(config);
 		} else if(action == 2) {
-			this.window.commandPanel.commandOutputPane.setText(config.getString("Error"));
+			this.window.status(config.getString("Error"));
 		} else if(action == 5) {
-			this.window.messagePanel.messageOutputPane.setText("Message Sent");
+			this.window.status("Message Sent");
 		}
 	}
 

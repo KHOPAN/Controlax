@@ -1,6 +1,6 @@
 package com.khopan.controlax.ui.command;
 
-import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.GridLayout;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -8,10 +8,9 @@ import java.util.concurrent.ThreadLocalRandom;
 
 import javax.swing.JButton;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-import javax.swing.JScrollPane;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
@@ -22,7 +21,6 @@ import com.khopan.lazel.packet.BinaryConfigPacket;
 public class CommandPanel extends JPanel {
 	private static final long serialVersionUID = -5085545801193268345L;
 
-	public final JTextPane commandOutputPane;
 	public final JTextField directoryField;
 	public final JTextField inputCommandField;
 	public final JButton sleepButton;
@@ -30,23 +28,13 @@ public class CommandPanel extends JPanel {
 	public final JButton restartButton;
 	public final JButton sendCommandButton;
 	public final JButton clearOutputButton;
+	public final JButton emergencyButton;
 
 	private int commandIdentifierCode;
 
 	public CommandPanel() {
 		this.setBorder(new TitledBorder("Command"));
-		this.setLayout(new GridLayout(1, 2));
-		JPanel outputPanel = new JPanel();
-		outputPanel.setBorder(new TitledBorder("Output"));
-		outputPanel.setLayout(new BorderLayout());
-		this.commandOutputPane = new JTextPane();
-		this.commandOutputPane.setEditable(false);
-		JScrollPane scrollPane = new JScrollPane(this.commandOutputPane);
-		outputPanel.add(scrollPane, BorderLayout.CENTER);
-		this.add(outputPanel);
-		JPanel controlPanel = new JPanel();
-		controlPanel.setBorder(new TitledBorder("Control"));
-		controlPanel.setLayout(new GridLayout(4, 1));
+		this.setLayout(new GridLayout(5, 1));
 		JPanel directoryPanel = new JPanel();
 		directoryPanel.setLayout(new GridLayout(1, 2));
 		JLabel directoryLabel = new JLabel();
@@ -55,7 +43,7 @@ public class CommandPanel extends JPanel {
 		directoryPanel.add(directoryLabel);
 		this.directoryField = new JTextField();
 		directoryPanel.add(this.directoryField);
-		controlPanel.add(directoryPanel);
+		this.add(directoryPanel);
 		JPanel inputCommandPanel = new JPanel();
 		inputCommandPanel.setLayout(new GridLayout(1, 2));
 		JLabel inputCommandLabel = new JLabel();
@@ -64,7 +52,7 @@ public class CommandPanel extends JPanel {
 		inputCommandPanel.add(inputCommandLabel);
 		this.inputCommandField = new JTextField();
 		inputCommandPanel.add(this.inputCommandField);
-		controlPanel.add(inputCommandPanel);
+		this.add(inputCommandPanel);
 		JPanel systemActionPanel = new JPanel();
 		systemActionPanel.setLayout(new GridLayout(1, 3));
 		this.sleepButton = new JButton();
@@ -97,13 +85,12 @@ public class CommandPanel extends JPanel {
 		});
 
 		systemActionPanel.add(this.restartButton);
-		controlPanel.add(systemActionPanel);
+		this.add(systemActionPanel);
 		JPanel actionPanel = new JPanel();
 		actionPanel.setLayout(new GridLayout(1, 2));
 		this.sendCommandButton = new JButton();
 		this.sendCommandButton.setText("Send Command");
 		this.sendCommandButton.addActionListener(Event -> {
-			this.commandOutputPane.setText("");
 			this.sendCommand();
 		});
 
@@ -111,12 +98,25 @@ public class CommandPanel extends JPanel {
 		this.clearOutputButton = new JButton();
 		this.clearOutputButton.setText("Clear Output Window");
 		this.clearOutputButton.addActionListener(Event -> {
-			this.commandOutputPane.setText("");
+			Controlax.INSTANCE.window.statusPane.setText("");
 		});
 
 		actionPanel.add(this.clearOutputButton);
-		controlPanel.add(actionPanel);
-		this.add(controlPanel);
+		this.add(actionPanel);
+		this.emergencyButton = new JButton();
+		this.emergencyButton.setText("Emergency Terminate");
+		this.emergencyButton.setForeground(new Color(0xFF0000));
+		this.emergencyButton.addActionListener(Event -> {
+			int response = JOptionPane.showConfirmDialog(Controlax.INSTANCE.window.frame, "Are you sure you want to terminate Controlax on the target side?", "Confirm Termination", JOptionPane.YES_NO_CANCEL_OPTION);
+
+			if(response == JOptionPane.YES_OPTION) {
+				BinaryConfigObject config = new BinaryConfigObject();
+				config.putInt("Action", -1);
+				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			}
+		});
+
+		this.add(this.emergencyButton);
 	}
 
 	private void sendCommand() {
@@ -125,12 +125,12 @@ public class CommandPanel extends JPanel {
 			String directory = this.directoryField.getText();
 
 			if(command == null || command.isEmpty()) {
-				this.commandOutputPane.setText("Error: Empty Command");
+				Controlax.INSTANCE.window.status("Error: Empty Command");
 				return;
 			}
 
 			this.commandIdentifierCode = ThreadLocalRandom.current().nextInt(0xFFFFFF + 1);
-			this.commandOutputPane.setText("Sending Command...\nIdentfiier Code: 0x" + String.format("%06x", this.commandIdentifierCode).toUpperCase());
+			Controlax.INSTANCE.window.status("Sending Command...\nIdentfiier Code: 0x" + String.format("%06x", this.commandIdentifierCode).toUpperCase());
 			BinaryConfigObject config = new BinaryConfigObject();
 			config.putInt("Action", 1);
 			config.putString("Directory", directory);
@@ -141,7 +141,7 @@ public class CommandPanel extends JPanel {
 			StringWriter stringWriter = new StringWriter();
 			PrintWriter printWriter = new PrintWriter(stringWriter);
 			new InternalError("Error while sending a command", Errors).printStackTrace(printWriter);
-			this.commandOutputPane.setText(stringWriter.toString());
+			Controlax.INSTANCE.window.status(stringWriter.toString());
 		}
 	}
 
@@ -149,9 +149,9 @@ public class CommandPanel extends JPanel {
 		int identifierCode = config.getInt("IdentifierCode");
 
 		if(this.commandIdentifierCode == identifierCode) {
-			this.commandOutputPane.setText(config.getString("Result"));
+			Controlax.INSTANCE.window.status(config.getString("Result"));
 		} else {
-			this.commandOutputPane.setText("Error: Invalid identifier code\nValid Code: " + String.format("%06x", this.commandIdentifierCode).toUpperCase() + "\nReceived Code: " + String.format("%06x", identifierCode).toUpperCase());
+			Controlax.INSTANCE.window.status("Error: Invalid identifier code\nValid Code: " + String.format("%06x", this.commandIdentifierCode).toUpperCase() + "\nReceived Code: " + String.format("%06x", identifierCode).toUpperCase());
 		}
 	}
 }

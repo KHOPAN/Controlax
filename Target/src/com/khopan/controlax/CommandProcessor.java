@@ -50,7 +50,7 @@ public class CommandProcessor {
 		result.putInt("Action", 1);
 		result.putInt("IdentifierCode", identifierCode);
 		result.putString("Result", output);
-		Controlax.INSTANCE.processor.sendPacket(new BinaryConfigPacket(result));
+		Controlax.INSTANCE.sendPacket(new BinaryConfigPacket(result));
 	}
 
 	public static void processSystem(BinaryConfigObject config) {
@@ -71,7 +71,7 @@ public class CommandProcessor {
 			BinaryConfigObject result = new BinaryConfigObject();
 			result.putInt("Action", 2);
 			result.putString("Error", stringWriter.toString());
-			Controlax.INSTANCE.processor.sendPacket(new BinaryConfigPacket(result));
+			Controlax.INSTANCE.sendPacket(new BinaryConfigPacket(result));
 		}
 	}
 }

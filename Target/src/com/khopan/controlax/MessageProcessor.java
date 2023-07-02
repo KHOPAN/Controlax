@@ -9,7 +9,7 @@ public class MessageProcessor {
 		String message = config.getString("Message");
 		BinaryConfigObject response = new BinaryConfigObject();
 		response.putInt("Action", 5);
-		Controlax.INSTANCE.processor.sendPacket(new BinaryConfigPacket(response));
+		Controlax.INSTANCE.sendPacket(new BinaryConfigPacket(response));
 		MessageRenderer.showMessage(message);
 	}
 }

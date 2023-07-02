@@ -2,27 +2,47 @@ package com.khopan.controlax.ui;
 
 import java.awt.BorderLayout;
 import java.awt.GridLayout;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
 
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JPanel;
-import javax.swing.SwingConstants;
+import javax.swing.JScrollPane;
+import javax.swing.JTextPane;
 import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.ui.color.ColorPanel;
 import com.khopan.controlax.ui.command.CommandPanel;
-import com.khopan.controlax.ui.image.ImagePanel;
+import com.khopan.controlax.ui.controlling.ControllingPanel;
+import com.khopan.controlax.ui.image.ScreenshotPanel;
+import com.khopan.controlax.ui.image.StreamRenderer;
 import com.khopan.controlax.ui.message.MessagePanel;
 
 public class ControlWindow {
 	public final JFrame frame;
+	public final JTextPane statusPane;
+	public final StreamRenderer streamRenderer;
 	public final ColorPanel colorPanel;
 	public final CommandPanel commandPanel;
 	public final MessagePanel messagePanel;
-	public final ImagePanel imagePanel;
+	public final ScreenshotPanel screenshotPanel;
+	public final ControllingPanel controllingPanel;
 
 	public ControlWindow() {
+		this.statusPane = new JTextPane();
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread thread, Throwable Errors) {
+				StringWriter stringWriter = new StringWriter();
+				PrintWriter printWriter = new PrintWriter(stringWriter);
+				Errors.printStackTrace(printWriter);
+				ControlWindow.this.status(stringWriter.toString());
+			}
+		});
+
 		this.frame = new JFrame();
 		this.frame.setTitle("Control Panel");
 		this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
@@ -32,25 +52,41 @@ public class ControlWindow {
 		panel.setLayout(new GridLayout(1, 2));
 		JPanel firstSubPanel = new JPanel();
 		firstSubPanel.setLayout(new GridLayout(2, 1));
-		this.colorPanel = new ColorPanel();
-		firstSubPanel.add(this.colorPanel);
-		JLabel unimplementedLabel = new JLabel();
-		unimplementedLabel.setText("NOT YET IMPLEMENTED");
-		unimplementedLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		firstSubPanel.add(unimplementedLabel);
+		JPanel statusPanel = new JPanel();
+		statusPanel.setLayout(new BorderLayout());
+		statusPanel.setBorder(new TitledBorder("Output"));
+		JScrollPane scrollPane = new JScrollPane(this.statusPane);
+		statusPanel.add(scrollPane, BorderLayout.CENTER);
+		firstSubPanel.add(statusPanel);
+		this.streamRenderer = new StreamRenderer();
+		firstSubPanel.add(this.streamRenderer);
 		panel.add(firstSubPanel);
 		JPanel secondSubPanel = new JPanel();
 		secondSubPanel.setLayout(new GridLayout(3, 1));
+		JPanel colorCommandPanel = new JPanel();
+		colorCommandPanel.setLayout(new GridLayout(1, 2));
+		this.colorPanel = new ColorPanel();
+		colorCommandPanel.add(this.colorPanel);
 		this.commandPanel = new CommandPanel();
-		secondSubPanel.add(this.commandPanel);
+		colorCommandPanel.add(this.commandPanel);
+		secondSubPanel.add(colorCommandPanel);
+		JPanel screenshotMessagePanel = new JPanel();
+		screenshotMessagePanel.setLayout(new GridLayout(1, 2));
 		this.messagePanel = new MessagePanel();
-		secondSubPanel.add(this.messagePanel);
-		this.imagePanel = new ImagePanel();
-		secondSubPanel.add(this.imagePanel);
+		screenshotMessagePanel.add(this.messagePanel);
+		this.screenshotPanel = new ScreenshotPanel();
+		screenshotMessagePanel.add(this.screenshotPanel);
+		secondSubPanel.add(screenshotMessagePanel);
+		this.controllingPanel = new ControllingPanel();
+		secondSubPanel.add(this.controllingPanel);
 		panel.add(secondSubPanel);
 		this.frame.add(panel, BorderLayout.CENTER);
 		this.frame.setSize(600, 400);
 		this.frame.setLocationRelativeTo(null);
 		this.frame.setVisible(true);
+	}
+
+	public void status(String message) {
+		this.statusPane.setText(this.statusPane.getText() + message + "\n");
 	}
 }

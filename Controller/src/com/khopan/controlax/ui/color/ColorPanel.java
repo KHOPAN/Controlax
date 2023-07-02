@@ -26,9 +26,7 @@ public class ColorPanel extends JPanel {
 
 	public ColorPanel() {
 		this.setBorder(new TitledBorder("Color"));
-		this.setLayout(new GridLayout(1, 2));
-		JPanel fieldPanel = new JPanel();
-		fieldPanel.setLayout(new GridLayout(3, 1));
+		this.setLayout(new GridLayout(7, 1));
 		JPanel colorInputPanel = new JPanel();
 		colorInputPanel.setLayout(new GridLayout(1, 2));
 		JLabel colorInputLabel = new JLabel();
@@ -37,7 +35,7 @@ public class ColorPanel extends JPanel {
 		colorInputPanel.add(colorInputLabel);
 		this.colorInputField = new JTextField();
 		colorInputPanel.add(this.colorInputField);
-		fieldPanel.add(colorInputPanel);
+		this.add(colorInputPanel);
 		JPanel transparencyInputPanel = new JPanel();
 		transparencyInputPanel.setLayout(new GridLayout(1, 2));
 		JLabel transparencyInputLabel = new JLabel();
@@ -46,7 +44,7 @@ public class ColorPanel extends JPanel {
 		transparencyInputPanel.add(transparencyInputLabel);
 		this.transparencyInputField = new JTextField();
 		transparencyInputPanel.add(this.transparencyInputField);
-		fieldPanel.add(transparencyInputPanel);
+		this.add(transparencyInputPanel);
 		JPanel movingRainbowRateInputPanel = new JPanel();
 		movingRainbowRateInputPanel.setLayout(new GridLayout(1, 2));
 		JLabel movingRainbowRateInputLabel = new JLabel();
@@ -55,11 +53,7 @@ public class ColorPanel extends JPanel {
 		movingRainbowRateInputPanel.add(movingRainbowRateInputLabel);
 		this.movingRainbowRateInputField = new JTextField();
 		movingRainbowRateInputPanel.add(this.movingRainbowRateInputField);
-		fieldPanel.add(movingRainbowRateInputPanel);
-		this.add(fieldPanel);
-
-		JPanel buttonPanel = new JPanel();
-		buttonPanel.setLayout(new GridLayout(4, 1));
+		this.add(movingRainbowRateInputPanel);
 		this.sendColorButton = new JButton();
 		this.sendColorButton.setText("Send Color");
 		this.sendColorButton.addActionListener(Event -> {
@@ -97,7 +91,7 @@ public class ColorPanel extends JPanel {
 			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		buttonPanel.add(this.sendColorButton);
+		this.add(this.sendColorButton);
 		this.clearButton = new JButton();
 		this.clearButton.setText("Clear Color");
 		this.clearButton.addActionListener(Event -> {
@@ -107,7 +101,7 @@ public class ColorPanel extends JPanel {
 			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		buttonPanel.add(this.clearButton);
+		this.add(this.clearButton);
 		this.movingRainbowButton = new JButton();
 		this.movingRainbowButton.setText("Moving Rainbow");
 		this.movingRainbowButton.addActionListener(Event -> {
@@ -142,7 +136,7 @@ public class ColorPanel extends JPanel {
 			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		buttonPanel.add(this.movingRainbowButton);
+		this.add(this.movingRainbowButton);
 		this.rainbowButton = new JButton();
 		this.rainbowButton.setText("Rainbow");
 		this.rainbowButton.addActionListener(Event -> {
@@ -168,7 +162,6 @@ public class ColorPanel extends JPanel {
 			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 		});
 
-		buttonPanel.add(this.rainbowButton);
-		this.add(buttonPanel);
+		this.add(this.rainbowButton);
 	}
 }

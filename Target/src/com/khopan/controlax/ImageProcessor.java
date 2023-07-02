@@ -20,7 +20,7 @@ public class ImageProcessor {
 
 	public static void processScreenshot() {
 		HeaderedImagePacket packet = new HeaderedImagePacket(ImageProcessor.takeScreenshot(), ImageProcessor.SCREENSHOT_HEADER, 0);
-		Controlax.INSTANCE.processor.sendPacket(packet);
+		Controlax.INSTANCE.sendPacket(packet);
 	}
 
 	public static BufferedImage takeScreenshot() {
