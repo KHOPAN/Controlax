@@ -1,7 +1,9 @@
 package com.khopan.controlax.ui;
 
 import java.awt.BorderLayout;
+import java.awt.Dimension;
 import java.awt.GridLayout;
+import java.awt.Toolkit;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
@@ -48,7 +50,9 @@ public class ControlWindow {
 		this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		this.frame.setLayout(new BorderLayout());
 		JPanel panel = new JPanel();
-		panel.setBorder(new EmptyBorder(20, 20, 20, 20));
+		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+		int empty = (int) Math.round((((double) size.width) + ((double) size.height)) * 0.00937207123d);
+		panel.setBorder(new EmptyBorder(empty, empty, empty, empty));
 		panel.setLayout(new GridLayout(1, 2));
 		JPanel firstSubPanel = new JPanel();
 		firstSubPanel.setLayout(new GridLayout(2, 1));
