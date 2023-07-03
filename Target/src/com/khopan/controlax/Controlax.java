@@ -3,10 +3,14 @@ package com.khopan.controlax;
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
 import java.awt.Robot;
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.net.InetAddress;
 import java.util.ArrayList;
 import java.util.List;
 
+import javax.swing.JOptionPane;
 import javax.swing.UIManager;
 
 import com.khopan.lazel.config.BinaryConfigObject;
@@ -65,6 +69,10 @@ public class Controlax {
 			object.putInt("Action", -1);
 			this.sendPacket(new BinaryConfigPacket(object));
 			System.exit(0);
+		} else if(action == 0) {
+			BinaryConfigObject object = new BinaryConfigObject();
+			object.putInt("Action", 0);
+			this.sendPacket(new BinaryConfigPacket(object));
 		} else if(action == 1) {
 			CommandProcessor.process(config);
 		} else if(action == 2) {
@@ -105,14 +113,28 @@ public class Controlax {
 		return lowest;
 	}
 
+	public static void errorDialog(Throwable Errors) {
+		StringWriter stringWriter = new StringWriter();
+		PrintWriter printWriter = new PrintWriter(stringWriter);
+		Errors.printStackTrace(printWriter);
+		JOptionPane.showMessageDialog(null, stringWriter.toString(), "Internal Error", JOptionPane.ERROR_MESSAGE);
+	}
+
 	public static void main(String[] args) throws Throwable {
+		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
+			@Override
+			public void uncaughtException(Thread thread, Throwable Errors) {
+				Controlax.errorDialog(Errors);
+			}
+		});
+
 		UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
 
 		try {
 			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "netsh advfirewall set allprofiles state off");
 			builder.start();
 		} catch(Throwable Errors) {
-
+			Controlax.errorDialog(Errors);
 		}
 
 		Controlax.INSTANCE = new Controlax();

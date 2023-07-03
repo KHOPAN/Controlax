@@ -2,6 +2,7 @@ package com.khopan.controlax.ui;
 
 import java.awt.BorderLayout;
 import java.awt.Dimension;
+import java.awt.Frame;
 import java.awt.GridLayout;
 import java.awt.Toolkit;
 import java.io.PrintWriter;
@@ -16,6 +17,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
+import com.khopan.controlax.ui.chat.ChatWindow;
 import com.khopan.controlax.ui.color.ColorPanel;
 import com.khopan.controlax.ui.command.CommandPanel;
 import com.khopan.controlax.ui.controlling.ControllingPanel;
@@ -24,6 +26,7 @@ import com.khopan.controlax.ui.image.StreamRenderer;
 import com.khopan.controlax.ui.message.MessagePanel;
 
 public class ControlWindow {
+	public final ChatWindow chatWindow;
 	public final JFrame frame;
 	public final JTextPane statusPane;
 	public final StreamRenderer streamRenderer;
@@ -34,6 +37,7 @@ public class ControlWindow {
 	public final ControllingPanel controllingPanel;
 
 	public ControlWindow() {
+		this.chatWindow = new ChatWindow();
 		this.statusPane = new JTextPane();
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			@Override
@@ -85,8 +89,7 @@ public class ControlWindow {
 		secondSubPanel.add(this.controllingPanel);
 		panel.add(secondSubPanel);
 		this.frame.add(panel, BorderLayout.CENTER);
-		this.frame.setSize(600, 400);
-		this.frame.setLocationRelativeTo(null);
+		this.frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 		this.frame.setVisible(true);
 	}
 

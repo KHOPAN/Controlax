@@ -47,20 +47,24 @@ public class TypingZone extends JEditorPane {
 
 			@Override
 			public void keyPressed(KeyEvent Event) {
-				BinaryConfigObject config = new BinaryConfigObject();
-				config.putInt("Action", 7);
-				config.putInt("SubAction", 7);
-				config.putInt("KeyCode", Event.getKeyCode());
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
+					BinaryConfigObject config = new BinaryConfigObject();
+					config.putInt("Action", 7);
+					config.putInt("SubAction", 7);
+					config.putInt("KeyCode", Event.getKeyCode());
+					Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				}
 			}
 
 			@Override
 			public void keyReleased(KeyEvent Event) {
-				BinaryConfigObject config = new BinaryConfigObject();
-				config.putInt("Action", 7);
-				config.putInt("SubAction", 8);
-				config.putInt("KeyCode", Event.getKeyCode());
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
+					BinaryConfigObject config = new BinaryConfigObject();
+					config.putInt("Action", 7);
+					config.putInt("SubAction", 8);
+					config.putInt("KeyCode", Event.getKeyCode());
+					Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				}
 			}
 		});
 	}

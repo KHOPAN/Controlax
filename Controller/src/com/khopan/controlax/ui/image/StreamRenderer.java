@@ -118,12 +118,14 @@ public class StreamRenderer extends Component {
 	private class Listener extends MouseAdapter {
 		@Override
 		public void mouseMoved(MouseEvent Event) {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 7);
-			config.putInt("SubAction", 3);
-			config.putDouble("MouseX", ((double) Event.getX()) / ((double) StreamRenderer.this.width));
-			config.putDouble("MouseY", ((double) Event.getY()) / ((double) StreamRenderer.this.height));
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
+				BinaryConfigObject config = new BinaryConfigObject();
+				config.putInt("Action", 7);
+				config.putInt("SubAction", 3);
+				config.putDouble("MouseX", ((double) Event.getX()) / ((double) StreamRenderer.this.width));
+				config.putDouble("MouseY", ((double) Event.getY()) / ((double) StreamRenderer.this.height));
+				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			}
 		}
 
 		@Override
@@ -133,29 +135,35 @@ public class StreamRenderer extends Component {
 
 		@Override
 		public void mousePressed(MouseEvent Event) {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 7);
-			config.putInt("SubAction", 4);
-			config.putInt("Button", Event.getButton());
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
+				BinaryConfigObject config = new BinaryConfigObject();
+				config.putInt("Action", 7);
+				config.putInt("SubAction", 4);
+				config.putInt("Button", Event.getButton());
+				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			}
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent Event) {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 7);
-			config.putInt("SubAction", 5);
-			config.putInt("Button", Event.getButton());
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
+				BinaryConfigObject config = new BinaryConfigObject();
+				config.putInt("Action", 7);
+				config.putInt("SubAction", 5);
+				config.putInt("Button", Event.getButton());
+				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			}
 		}
 
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent Event) {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 7);
-			config.putInt("SubAction", 6);
-			config.putInt("Amount", Event.getScrollAmount());
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
+				BinaryConfigObject config = new BinaryConfigObject();
+				config.putInt("Action", 7);
+				config.putInt("SubAction", 6);
+				config.putInt("Amount", Event.getScrollAmount());
+				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			}
 		}
 	}
 }

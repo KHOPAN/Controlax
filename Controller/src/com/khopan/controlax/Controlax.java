@@ -62,6 +62,8 @@ public class Controlax {
 
 		if(action == -1) {
 			System.exit(0);
+		} else if(action == 0) {
+			this.window.screenshotPanel.lastResponse = true;
 		} else if(action == 1) {
 			this.window.commandPanel.processCommand(config);
 		} else if(action == 2) {
