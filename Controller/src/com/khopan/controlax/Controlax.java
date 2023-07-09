@@ -6,6 +6,7 @@ import java.net.InetAddress;
 
 import javax.swing.UIManager;
 
+import com.khopan.bromine.Bromine;
 import com.khopan.controlax.packet.HeaderedImagePacket;
 import com.khopan.controlax.ui.ControlWindow;
 import com.khopan.controlax.ui.image.ScreenshotPanel;
@@ -18,11 +19,13 @@ public class Controlax {
 	public static Controlax INSTANCE;
 
 	public final IPInputWindow addressInput;
+	public final ControlaxUI userInterface;
 	public ControlWindow window;
 	public Client client;
 
 	public Controlax() {
 		this.addressInput = new IPInputWindow();
+		this.userInterface = new ControlaxUI();
 	}
 
 	public void addressEntered(InetAddress address) {
@@ -30,7 +33,8 @@ public class Controlax {
 		this.client.port().set(2553);
 		this.client.host().set(address.getHostAddress());
 		this.client.connectionListener().set(() -> {
-			this.window = new ControlWindow();
+			//this.window = new ControlWindow();
+			Bromine.initialize(this.userInterface);
 			BinaryConfigObject config = new BinaryConfigObject();
 			config.putInt("Action", 4);
 			config.putBoolean("Start", true);

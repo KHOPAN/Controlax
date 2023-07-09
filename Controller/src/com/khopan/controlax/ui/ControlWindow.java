@@ -17,6 +17,7 @@ import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
+import com.khopan.controlax.Controlax;
 import com.khopan.controlax.ui.chat.ChatWindow;
 import com.khopan.controlax.ui.color.ColorPanel;
 import com.khopan.controlax.ui.command.CommandPanel;
@@ -45,7 +46,9 @@ public class ControlWindow {
 				StringWriter stringWriter = new StringWriter();
 				PrintWriter printWriter = new PrintWriter(stringWriter);
 				Errors.printStackTrace(printWriter);
-				ControlWindow.this.status(stringWriter.toString());
+				String text = stringWriter.toString();
+				ControlWindow.this.status(text);
+				Controlax.INSTANCE.userInterface.outputField.text().set(text);
 			}
 		});
 
