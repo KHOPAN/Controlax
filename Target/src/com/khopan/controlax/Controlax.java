@@ -20,6 +20,7 @@ import com.khopan.lazel.server.ClientProcessor;
 import com.khopan.lazel.server.Server;
 
 public class Controlax {
+	public static final int VERSION = 7;
 	public static final InetAddress IP_ADDRESS = Controlax.getHost();
 	public static Controlax INSTANCE;
 
