@@ -3,6 +3,7 @@ package com.khopan.controlax.ui.color;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.Component;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
@@ -16,6 +17,8 @@ import java.util.concurrent.TimeUnit;
 import javax.swing.JWindow;
 
 public class ColorDisplay {
+	public static final Cursor BLANK_CURSOR = Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "blank");
+
 	private static final ColorDisplay DISPLAY = new ColorDisplay();
 
 	private final JWindow frame;
@@ -29,7 +32,7 @@ public class ColorDisplay {
 		this.frame.setBounds(0, 0, size.width, size.height);
 		this.frame.setLayout(new BorderLayout());
 		this.frame.add(this.pane, BorderLayout.CENTER);
-		this.frame.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(1, 1, BufferedImage.TYPE_INT_ARGB), new Point(0, 0), "blank"));
+		this.frame.setCursor(ColorDisplay.BLANK_CURSOR);
 	}
 
 	public static void clear() {

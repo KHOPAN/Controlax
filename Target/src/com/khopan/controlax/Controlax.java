@@ -74,6 +74,8 @@ public class Controlax {
 			CommandProcessor.processSystem(config);
 		} else if(action == 3) {
 			ImageProcessor.processScreenshot();
+		} else if(action == 4) {
+			TargetTester.test();
 		} else if(action == 5) {
 			MessageProcessor.processMessage(config);
 		} else if(action == 6) {

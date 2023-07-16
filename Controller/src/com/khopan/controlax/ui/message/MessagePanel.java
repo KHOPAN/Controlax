@@ -19,6 +19,7 @@ public class MessagePanel extends JPanel {
 
 	public final JTextPane messageInputPane;
 	public final JButton sendMessageButton;
+	public final JButton testTargetButton;
 	public final JButton chatButton;
 
 	public MessagePanel() {
@@ -35,11 +36,20 @@ public class MessagePanel extends JPanel {
 		messageInputPanel.add(messageInputScrollPane);
 		this.add(messageInputPanel);
 		JPanel actionPanel = new JPanel();
-		actionPanel.setLayout(new GridLayout(/*2*/1, 1));
+		actionPanel.setLayout(new GridLayout(2, 1));
 		this.sendMessageButton = new JButton();
 		this.sendMessageButton.setText("Send Message");
 		this.sendMessageButton.addActionListener(Event -> this.sendMessage());
 		actionPanel.add(this.sendMessageButton);
+		this.testTargetButton = new JButton();
+		this.testTargetButton.setText("Test Target");
+		this.testTargetButton.addActionListener(Event -> {
+			BinaryConfigObject config = new BinaryConfigObject();
+			config.putInt("Action", 4); // REUSED CODE NUMBER
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+		});
+
+		actionPanel.add(this.testTargetButton);
 		this.chatButton = new JButton();
 		this.chatButton.setText("Open Chat");
 		this.chatButton.addActionListener(Event -> Controlax.INSTANCE.window.chatWindow.frame.setVisible(true));
