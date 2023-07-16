@@ -33,7 +33,7 @@ public class ControllingPanel extends JPanel {
 			config.putInt("Action", 7);
 			config.putInt("SubAction", 1);
 			config.putBoolean("Control", this.mouseControlBox.isSelected());
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		mousePanel.add(this.mouseControlBox);
@@ -48,7 +48,7 @@ public class ControllingPanel extends JPanel {
 			config.putInt("Action", 7);
 			config.putInt("SubAction", 2);
 			config.putBoolean("Control", this.keyboardControlBox.isSelected());
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		keyboardPanel.add(this.keyboardControlBox);

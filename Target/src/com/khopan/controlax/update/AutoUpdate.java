@@ -7,6 +7,8 @@ import java.io.InputStreamReader;
 import java.net.URI;
 import java.net.URLConnection;
 
+import javax.swing.UIManager;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.khopan.controlax.Controlax;
@@ -35,6 +37,10 @@ public class AutoUpdate {
 			this.downloadLatestVersion(downloadLink);
 			this.autoRun();
 			this.execute();
+			System.exit(0);
+		} else {
+			UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+			Controlax.INSTANCE = new Controlax();
 		}
 	}
 

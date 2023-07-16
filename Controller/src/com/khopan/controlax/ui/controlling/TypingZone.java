@@ -52,7 +52,7 @@ public class TypingZone extends JEditorPane {
 					config.putInt("Action", 7);
 					config.putInt("SubAction", 7);
 					config.putInt("KeyCode", Event.getKeyCode());
-					Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 				}
 			}
 
@@ -63,7 +63,7 @@ public class TypingZone extends JEditorPane {
 					config.putInt("Action", 7);
 					config.putInt("SubAction", 8);
 					config.putInt("KeyCode", Event.getKeyCode());
-					Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 				}
 			}
 		});

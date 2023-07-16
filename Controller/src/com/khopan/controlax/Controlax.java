@@ -2,7 +2,13 @@ package com.khopan.controlax;
 
 import java.awt.GraphicsDevice;
 import java.awt.GraphicsEnvironment;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.swing.UIManager;
 
@@ -13,57 +19,38 @@ import com.khopan.controlax.ui.image.StreamRenderer;
 import com.khopan.lazel.client.Client;
 import com.khopan.lazel.config.BinaryConfigObject;
 import com.khopan.lazel.packet.BinaryConfigPacket;
+import com.khopan.lazel.packet.Packet;
 
 public class Controlax {
 	public static Controlax INSTANCE;
 
-	//public final IPInputWindow addressInput;
 	public ControlWindow window;
-	public Client client;
+	public Client selected;
 
 	public Controlax() {
-		//this.addressInput = new IPInputWindow();
 		this.window = new ControlWindow();
 	}
 
-	public void addressEntered(InetAddress address) {
-		this.client = new Client();
-		this.client.port().set(2553);
-		this.client.host().set(address.getHostAddress());
-		this.client.connectionListener().set(() -> {
-			this.window = new ControlWindow();
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 4);
-			config.putBoolean("Start", true);
-			config.putInt("Framerate", Controlax.getFramerate());
-			this.client.sendPacket(new BinaryConfigPacket(config));
-		});
+	public void processPacket(Packet packet) {
+		try {
+			BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
+			this.processAction(config.getObject());
+		} catch(Throwable Errors) {
+			HeaderedImagePacket imagePacket = packet.getPacket(HeaderedImagePacket.class);
+			byte header = imagePacket.getHeader();
 
-		this.client.packetListener().set(packet -> {
-			try {
-				BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
-				this.processAction(config.getObject());
-			} catch(Throwable Errors) {
-				HeaderedImagePacket imagePacket = packet.getPacket(HeaderedImagePacket.class);
-				byte header = imagePacket.getHeader();
-
-				if(header == ScreenshotPanel.SCREENSHOT_HEADER) {
-					this.window.screenshotPanel.processImagePacket(imagePacket);
-				} else if(header == StreamRenderer.STREAM_HEADER) {
-					this.window.streamRenderer.processPacket(imagePacket);
-				}
+			if(header == ScreenshotPanel.SCREENSHOT_HEADER) {
+				this.window.screenshotPanel.processImagePacket(imagePacket);
+			} else if(header == StreamRenderer.STREAM_HEADER) {
+				this.window.streamRenderer.processPacket(imagePacket);
 			}
-		});
-
-		this.client.start();
+		}
 	}
 
 	private void processAction(BinaryConfigObject config) {
 		int action = config.getInt("Action");
 
-		if(action == -1) {
-			System.exit(0);
-		} else if(action == 0) {
+		if(action == 0) {
 			this.window.screenshotPanel.lastResponse = true;
 		} else if(action == 1) {
 			this.window.commandPanel.processCommand(config);
@@ -83,6 +70,62 @@ public class Controlax {
 		}
 
 		return lowest;
+	}
+
+	public static List<NetworkEntry> getLANIPAddress() {
+		List<NetworkEntry> entryList = new ArrayList<>();
+
+		try {
+			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "arp -a");
+			Process process = builder.start();
+			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+			String output = "";
+			String line;
+
+			while((line = reader.readLine()) != null) {
+				output += line + "\n";
+			}
+
+			Pattern pattern = Pattern.compile("[0-9]+\\.[0-9]+\\.[0-9]+\\.[0-9]+");
+			Matcher matcher = pattern.matcher(output);
+			List<Thread> threadList = new ArrayList<>();
+
+			while(matcher.find()) {
+				String address = matcher.group();
+
+				Thread thread = new Thread(() -> {
+					try {
+						NetworkEntry entry = new NetworkEntry();
+						entry.address = InetAddress.getByName(address);
+						entry.hostAddress = entry.address.getHostAddress();
+						entryList.add(entry);
+					} catch(Throwable Errors) {
+						Errors.printStackTrace();
+					}
+				});
+
+				thread.start();
+				threadList.add(thread);
+			}
+
+			for(int i = 0; i < threadList.size(); i++) {
+				threadList.get(i).join();
+			}
+
+			threadList.clear();
+			entryList.sort((first, second) -> {
+				return first.hostAddress.compareTo(second.hostAddress);
+			});
+		} catch(Throwable Errors) {
+			Errors.printStackTrace();
+		}
+
+		return entryList;
+	}
+
+	public static class NetworkEntry {
+		public String hostAddress;
+		public InetAddress address;
 	}
 
 	public static void main(String[] args) throws Throwable {

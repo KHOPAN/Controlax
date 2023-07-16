@@ -6,12 +6,14 @@ import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
 import java.awt.RenderingHints;
-import java.awt.event.MouseAdapter;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
+import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
-import java.util.ArrayList;
-import java.util.List;
 
 import com.khopan.controlax.Controlax;
 import com.khopan.controlax.packet.HeaderedImagePacket;
@@ -23,67 +25,20 @@ public class StreamRenderer extends Component {
 
 	public static final byte STREAM_HEADER = 0x5F;
 
-	private final int framerate;
-	private final long waitTime;
-	private final List<HeaderedImagePacket> imageBuffer;
-	private final Thread processingThread;
 	private final Listener listener;
 
 	private int width;
 	private int height;
-	private int expectedFrame;
 	private BufferedImage image;
 	private Image renderingImage;
 
 	public StreamRenderer() {
-		this.framerate = Controlax.getFramerate();
-		this.waitTime = Math.round(1000.0d / ((double) this.framerate));
-		this.expectedFrame = 1;
-		this.imageBuffer = new ArrayList<>();
-		this.processingThread = new Thread(this :: process);
-		this.processingThread.setPriority(6);
-		this.processingThread.setName("Controlax Server Stream Processing Thread");
-		this.processingThread.start();
 		this.listener = new Listener();
 		this.addMouseListener(this.listener);
 		this.addMouseMotionListener(this.listener);
-	}
-
-	private void process() {
-		while(true) {
-			HeaderedImagePacket packet;
-
-			while((packet = this.getFrame(this.expectedFrame)) == null) {
-				// Empty loop, used for waiting only
-			}
-
-			this.image = packet.getImage();
-			this.renderingImage = this.image.getScaledInstance(this.width, this.height, BufferedImage.SCALE_SMOOTH);
-			this.expectedFrame++;
-			this.repaint();
-
-			try {
-				Thread.sleep(this.waitTime);
-			} catch(Throwable Errors) {
-
-			}
-		}
-	}
-
-	private HeaderedImagePacket getFrame(int frame) {
-		try {
-			Thread.sleep(1);
-		} catch(Throwable Errors) {
-
-		}
-
-		for(int i = 0; i < StreamRenderer.this.imageBuffer.size(); i++) {
-			if(StreamRenderer.this.imageBuffer.get(i).getFrame() == frame) {
-				return StreamRenderer.this.imageBuffer.remove(i);
-			}
-		}
-
-		return null;
+		this.addMouseWheelListener(this.listener);
+		this.addKeyListener(this.listener);
+		this.setFocusable(true);
 	}
 
 	@SuppressWarnings("deprecation")
@@ -102,7 +57,12 @@ public class StreamRenderer extends Component {
 	}
 
 	public void processPacket(HeaderedImagePacket packet) {
-		this.imageBuffer.add(packet);
+		new Thread(() -> {
+			BufferedImage image = packet.getImage();
+			this.image = image;
+			this.renderingImage = image.getScaledInstance(this.width, this.height, BufferedImage.SCALE_SMOOTH);
+			this.repaint();
+		}).start();
 	}
 
 	@Override
@@ -115,7 +75,11 @@ public class StreamRenderer extends Component {
 		Graphics2D.dispose();
 	}
 
-	private class Listener extends MouseAdapter {
+	private class Listener implements MouseListener, MouseMotionListener, MouseWheelListener, KeyListener {
+		private boolean pressedF9;
+		private boolean pressedF10;
+		private boolean pressedF11;
+
 		@Override
 		public void mouseMoved(MouseEvent Event) {
 			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
@@ -124,7 +88,7 @@ public class StreamRenderer extends Component {
 				config.putInt("SubAction", 3);
 				config.putDouble("MouseX", ((double) Event.getX()) / ((double) StreamRenderer.this.width));
 				config.putDouble("MouseY", ((double) Event.getY()) / ((double) StreamRenderer.this.height));
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 			}
 		}
 
@@ -140,7 +104,7 @@ public class StreamRenderer extends Component {
 				config.putInt("Action", 7);
 				config.putInt("SubAction", 4);
 				config.putInt("Button", Event.getButton());
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 			}
 		}
 
@@ -151,7 +115,7 @@ public class StreamRenderer extends Component {
 				config.putInt("Action", 7);
 				config.putInt("SubAction", 5);
 				config.putInt("Button", Event.getButton());
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 			}
 		}
 
@@ -162,8 +126,79 @@ public class StreamRenderer extends Component {
 				config.putInt("Action", 7);
 				config.putInt("SubAction", 6);
 				config.putInt("Amount", Event.getScrollAmount());
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 			}
+		}
+
+		@Override
+		public void keyTyped(KeyEvent Event) {
+
+		}
+
+		@Override
+		public void keyPressed(KeyEvent Event) {
+			int code = Event.getKeyCode();
+
+			if(code == KeyEvent.VK_F9) {
+				this.pressedF9 = true;
+			} else if(code == KeyEvent.VK_F10) {
+				this.pressedF10 = true;
+			} else if(code == KeyEvent.VK_F11) {
+				this.pressedF11 = true;
+			} else {
+				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
+					BinaryConfigObject config = new BinaryConfigObject();
+					config.putInt("Action", 7);
+					config.putInt("SubAction", 7);
+					config.putInt("KeyCode", code);
+					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+				}
+			}
+		}
+
+		@Override
+		public void keyReleased(KeyEvent Event) {
+			int code = Event.getKeyCode();
+
+			if(code == KeyEvent.VK_F9) {
+				if(this.pressedF9) {
+					this.pressedF9 = true;
+					Controlax.INSTANCE.window.controllingPanel.mouseControlBox.doClick();
+				}
+			} else if(code == KeyEvent.VK_F10) {
+				if(this.pressedF10) {
+					this.pressedF10 = true;
+					Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.doClick();
+				}
+			} else if(code == KeyEvent.VK_F11) {
+				if(this.pressedF11) {
+					this.pressedF11 = true;
+					Controlax.INSTANCE.window.screenshotPanel.fullscreen.dispose();
+				}
+			} else {
+				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
+					BinaryConfigObject config = new BinaryConfigObject();
+					config.putInt("Action", 7);
+					config.putInt("SubAction", 8);
+					config.putInt("KeyCode", code);
+					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+				}
+			}
+		}
+
+		@Override
+		public void mouseClicked(MouseEvent Event) {
+
+		}
+
+		@Override
+		public void mouseEntered(MouseEvent Event) {
+			this.mouseMoved(Event);
+		}
+
+		@Override
+		public void mouseExited(MouseEvent Event) {
+			this.mouseMoved(Event);
 		}
 	}
 }

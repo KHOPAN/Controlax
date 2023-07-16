@@ -88,7 +88,7 @@ public class ColorPanel extends JPanel {
 			this.transparencyInputField.setText(Float.toString(transparency));
 			config.putInt("Color", color);
 			config.putFloat("Transparency", transparency);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		this.add(this.sendColorButton);
@@ -98,7 +98,7 @@ public class ColorPanel extends JPanel {
 			BinaryConfigObject config = new BinaryConfigObject();
 			config.putInt("Action", 6);
 			config.putInt("SubAction", 0);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		this.add(this.clearButton);
@@ -133,7 +133,7 @@ public class ColorPanel extends JPanel {
 			this.movingRainbowRateInputField.setText(Float.toString(rate));
 			config.putFloat("Transparency", transparency);
 			config.putFloat("Rate", rate);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		this.add(this.movingRainbowButton);
@@ -159,7 +159,7 @@ public class ColorPanel extends JPanel {
 			this.transparencyInputField.setText(Float.toString(transparency));
 			config.putFloat("Transparency", transparency);
 			config.putFloat("Rate", 0.0001f);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		this.add(this.rainbowButton);

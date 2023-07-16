@@ -59,6 +59,6 @@ public class MessagePanel extends JPanel {
 		BinaryConfigObject config = new BinaryConfigObject();
 		config.putInt("Action", 5);
 		config.putString("Message", message);
-		Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+		Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 	}
 }

