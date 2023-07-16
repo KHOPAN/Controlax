@@ -15,7 +15,6 @@ import java.util.List;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
-import javax.swing.JTabbedPane;
 import javax.swing.JTable;
 import javax.swing.JTextPane;
 import javax.swing.ListSelectionModel;
@@ -81,12 +80,11 @@ public class ControlWindow {
 		this.frame.setTitle("Control Panel");
 		this.frame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 		this.frame.setLayout(new BorderLayout());
-		JTabbedPane tab = new JTabbedPane();
-		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-		int empty = (int) Math.round((((double) size.width) + ((double) size.height)) * 0.00937207123d);
-		tab.setBorder(new EmptyBorder(empty, empty, empty, empty));
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(1, 2));
+		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+		int empty = (int) Math.round((((double) size.width) + ((double) size.height)) * 0.00937207123d);
+		panel.setBorder(new EmptyBorder(empty, empty, empty, empty));
 		this.firstSubPanel = new JPanel();
 		this.firstSubPanel.setLayout(new GridLayout(2, 1));
 		JPanel ipListStatusPanel = new JPanel();
@@ -186,9 +184,7 @@ public class ControlWindow {
 		this.controllingPanel = new ControllingPanel();
 		secondSubPanel.add(this.controllingPanel);
 		panel.add(secondSubPanel);
-		tab.addTab("Main Controlling", panel);
-		tab.addTab("Startup", new JPanel());
-		this.frame.add(tab, BorderLayout.CENTER);
+		this.frame.add(panel, BorderLayout.CENTER);
 		this.frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 		this.frame.setVisible(true);
 	}

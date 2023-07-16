@@ -11,8 +11,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.swing.JOptionPane;
+import javax.swing.UIManager;
 
-import com.khopan.controlax.update.AutoUpdate;
 import com.khopan.lazel.config.BinaryConfigObject;
 import com.khopan.lazel.packet.BinaryConfigPacket;
 import com.khopan.lazel.packet.Packet;
@@ -117,13 +117,15 @@ public class Controlax {
 			}
 		});
 
-		try {
+		/*try {
 			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", "netsh advfirewall set allprofiles state off");
 			builder.start();
 		} catch(Throwable Errors) {
 			Controlax.errorDialog(Errors);
 		}
 
-		AutoUpdate.initialize();
+		AutoUpdate.initialize();*/
+		UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		Controlax.INSTANCE = new Controlax();
 	}
 }
