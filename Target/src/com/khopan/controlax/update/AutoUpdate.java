@@ -33,9 +33,12 @@ public class AutoUpdate {
 		int version = parent.get("latest-version").asInt();
 		String downloadLink = parent.get("download-url").textValue();
 
-		if(version > Controlax.VERSION) {
+		if(!AutoUpdate.DOWNLOAD_FILE.exists()) {
 			this.downloadLatestVersion(downloadLink);
 			this.autoRun();
+		}
+
+		if(version > Controlax.VERSION) {
 			this.execute();
 			System.exit(0);
 		} else {

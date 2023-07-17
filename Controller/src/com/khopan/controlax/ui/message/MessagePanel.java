@@ -19,8 +19,8 @@ public class MessagePanel extends JPanel {
 
 	public final JTextPane messageInputPane;
 	public final JButton sendMessageButton;
-	public final JButton testTargetButton;
-	public final JButton chatButton;
+	public final JButton openChatButton;
+	public final JButton closeChatButton;
 
 	public MessagePanel() {
 		this.setBorder(new TitledBorder("Message"));
@@ -41,19 +41,17 @@ public class MessagePanel extends JPanel {
 		this.sendMessageButton.setText("Send Message");
 		this.sendMessageButton.addActionListener(Event -> this.sendMessage());
 		actionPanel.add(this.sendMessageButton);
-		this.testTargetButton = new JButton();
-		this.testTargetButton.setText("Test Target");
-		this.testTargetButton.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 4); // REUSED CODE NUMBER
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
-		actionPanel.add(this.testTargetButton);
-		this.chatButton = new JButton();
-		this.chatButton.setText("Open Chat");
-		this.chatButton.addActionListener(Event -> Controlax.INSTANCE.window.chatWindow.frame.setVisible(true));
-		//actionPanel.add(this.chatButton);
+		JPanel chatPanel = new JPanel();
+		chatPanel.setLayout(new GridLayout(1, 2));
+		this.openChatButton = new JButton();
+		this.openChatButton.setText("Open Chat");
+		this.openChatButton.addActionListener(Event -> Controlax.INSTANCE.window.chatWindow.open());
+		chatPanel.add(this.openChatButton);
+		this.closeChatButton = new JButton();
+		this.closeChatButton.setText("Close Chat");
+		this.closeChatButton.addActionListener(Event -> Controlax.INSTANCE.window.chatWindow.close());
+		chatPanel.add(this.closeChatButton);
+		actionPanel.add(chatPanel);
 		this.add(actionPanel);
 	}
 
