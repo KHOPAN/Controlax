@@ -5,14 +5,13 @@ import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
-import com.khopan.lazel.config.BinaryConfigObject;
-import com.khopan.lazel.packet.BinaryConfigPacket;
+import com.khopan.controlax.action.action.CommandAction;
+import com.khopan.controlax.action.action.PowerAction;
+import com.khopan.controlax.action.action.ResponseAction;
 
 public class CommandProcessor {
-	public static void process(BinaryConfigObject config) {
-		String directory = config.getString("Directory");
-		String command = config.getString("Command");
-		int identifierCode = config.getInt("IdentifierCode");
+	public static void command(CommandAction action) {
+		String directory = action.getDirectory();
 		String output;
 
 		try {
@@ -22,7 +21,7 @@ public class CommandProcessor {
 				resultCommand += "cd " + directory + " && ";
 			}
 
-			resultCommand += command;
+			resultCommand += action.getCommand();
 			ProcessBuilder builder = new ProcessBuilder("cmd.exe", "/c", resultCommand);
 			builder.redirectErrorStream(true);
 			Process process = builder.start();
@@ -46,32 +45,28 @@ public class CommandProcessor {
 			output = stringWriter.toString();
 		}
 
-		BinaryConfigObject result = new BinaryConfigObject();
-		result.putInt("Action", 1);
-		result.putInt("IdentifierCode", identifierCode);
-		result.putString("Result", output);
-		Controlax.INSTANCE.sendPacket(new BinaryConfigPacket(result));
+		Controlax.INSTANCE.processor.sendAction(ResponseAction.getInstance(output));
 	}
 
-	public static void processSystem(BinaryConfigObject config) {
-		try {
-			int action = config.getInt("SubAction");
+	public static void power(PowerAction action) {
+		int code = action.getAction();
+		String command = "";
 
-			if(action == 1) {
-				new ProcessBuilder("cmd.exe", "/c", "rundll32.exe powrprof.dll, SetSuspendState Sleep").start();
-			} else if(action == 2) {
-				new ProcessBuilder("cmd.exe", "/c", "shutdown -s -t 0").start();
-			} else if(action == 3) {
-				new ProcessBuilder("cmd.exe", "/c", "shutdown -r -t 0").start();
-			}
+		if(code == PowerAction.ACTION_SLEEP) {
+			command = "rundll32.exe powrprof.dll, SetSuspendState Sleep";
+		} else if(code == PowerAction.ACTION_SHUTDOWN) {
+			command = "shutdown -s -t 0";
+		} else if(code == PowerAction.ACTION_RESTART) {
+			command = "shutdown -r -t 0";
+		}
+
+		try {
+			new ProcessBuilder("cmd.exe", "/c", command).start();
 		} catch(Throwable Errors) {
 			StringWriter stringWriter = new StringWriter();
 			PrintWriter printWriter = new PrintWriter(stringWriter);
-			new InternalError("Client: Error while executing system action", Errors).printStackTrace(printWriter);
-			BinaryConfigObject result = new BinaryConfigObject();
-			result.putInt("Action", 2);
-			result.putString("Error", stringWriter.toString());
-			Controlax.INSTANCE.sendPacket(new BinaryConfigPacket(result));
+			new InternalError("Client: Error while executing command", Errors).printStackTrace(printWriter);
+			Controlax.INSTANCE.processor.sendAction(ResponseAction.getInstance(stringWriter.toString()));
 		}
 	}
 }

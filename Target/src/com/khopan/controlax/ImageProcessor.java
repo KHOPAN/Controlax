@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 
+import com.khopan.controlax.action.action.ScreenshotAction;
 import com.khopan.controlax.packet.HeaderedImagePacket;
 
 public class ImageProcessor {
@@ -18,14 +19,16 @@ public class ImageProcessor {
 
 	private static BufferedImage CursorImage;
 
-	public static void processScreenshot() {
-		HeaderedImagePacket packet = new HeaderedImagePacket(ImageProcessor.takeScreenshot(), ImageProcessor.SCREENSHOT_HEADER, 0);
-		Controlax.INSTANCE.sendPacket(packet);
+	public static void process(ScreenshotAction action) {
+		ImageProcessor.sendScreenshot(ImageProcessor.SCREENSHOT_HEADER);
 	}
 
-	public static BufferedImage takeScreenshot() {
+	public static void sendScreenshot(byte header) {
+		Controlax.INSTANCE.sendPacket(new HeaderedImagePacket(ImageProcessor.screenshot(), header));
+	}
+
+	public static BufferedImage screenshot() {
 		Rectangle area = new Rectangle();
-		area.x = area.y = 0;
 		area.setSize(Toolkit.getDefaultToolkit().getScreenSize());
 		double average = (int) Math.round((((double) area.width) + ((double) area.height)) * 0.5d);
 		Point mouse = MouseInfo.getPointerInfo().getLocation();

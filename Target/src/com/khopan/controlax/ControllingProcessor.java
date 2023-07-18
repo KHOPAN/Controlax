@@ -3,47 +3,37 @@ package com.khopan.controlax;
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
-import com.khopan.lazel.config.BinaryConfigObject;
+import com.khopan.controlax.action.action.KeyboardAction;
+import com.khopan.controlax.action.action.MouseAction;
 
 public class ControllingProcessor {
 	private static final Dimension DISPLAY_DIMENSION = Toolkit.getDefaultToolkit().getScreenSize();
 
-	private static boolean MouseControl;
-	private static boolean KeyboardControl;
+	public static void mouse(MouseAction action) {
+		int code = action.getAction();
 
-	public static void process(BinaryConfigObject config) {
-		int action = config.getInt("SubAction");
+		if(code == MouseAction.ACTION_MOUSE_WHEEL_MOVED) {
+			Controlax.INSTANCE.robot.mouseWheel((int) Math.round(action.getWheelRotation()));
+		} else {
+			int x = (int) Math.round(action.getX() * ((double) ControllingProcessor.DISPLAY_DIMENSION.width));
+			int y = (int) Math.round(action.getY() * ((double) ControllingProcessor.DISPLAY_DIMENSION.height));
+			Controlax.INSTANCE.robot.mouseMove(x, y);
 
-		if(action == 1) {
-			ControllingProcessor.MouseControl = config.getBoolean("Control");
-		} else if(action == 2) {
-			ControllingProcessor.KeyboardControl = config.getBoolean("Control");
-		} else if(action == 3) {
-			if(ControllingProcessor.MouseControl) {
-				int x = (int) Math.round(config.getDouble("MouseX") * ((double) ControllingProcessor.DISPLAY_DIMENSION.width));
-				int y = (int) Math.round(config.getDouble("MouseY") * ((double) ControllingProcessor.DISPLAY_DIMENSION.height));
-				Controlax.INSTANCE.robot.mouseMove(x, y);
+			if(code == MouseAction.ACTION_MOUSE_PRESSED) {
+				Controlax.INSTANCE.robot.mousePress(action.getButton());
+			} else if(code == MouseAction.ACTION_MOUSE_PRESSED) {
+				Controlax.INSTANCE.robot.mouseRelease(action.getButton());
 			}
-		} else if(action == 4) {
-			if(ControllingProcessor.MouseControl) {
-				Controlax.INSTANCE.robot.mousePress(config.getInt("Button"));
-			}
-		} else if(action == 5) {
-			if(ControllingProcessor.MouseControl) {
-				Controlax.INSTANCE.robot.mouseRelease(config.getInt("Button"));
-			}
-		} else if(action == 6) {
-			if(ControllingProcessor.MouseControl) {
-				Controlax.INSTANCE.robot.mouseWheel(config.getInt("Amount"));
-			}
-		} else if(action == 7) {
-			if(ControllingProcessor.KeyboardControl) {
-				Controlax.INSTANCE.robot.keyPress(config.getInt("KeyCode"));
-			}
-		} else if(action == 8) {
-			if(ControllingProcessor.KeyboardControl) {
-				Controlax.INSTANCE.robot.keyRelease(config.getInt("KeyCode"));
-			}
+		}
+	}
+
+	public static void keyboard(KeyboardAction action) {
+		int code = action.getAction();
+
+		if(code == KeyboardAction.ACTION_KEY_PRESSED) {
+			Controlax.INSTANCE.robot.keyPress(action.getKeyCode());
+		} else if(code == KeyboardAction.ACTION_KEY_RELEASED) {
+			Controlax.INSTANCE.robot.keyRelease(action.getKeyCode());
 		}
 	}
 }

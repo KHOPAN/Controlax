@@ -13,8 +13,7 @@ import java.awt.event.KeyListener;
 import javax.swing.JEditorPane;
 
 import com.khopan.controlax.Controlax;
-import com.khopan.lazel.config.BinaryConfigObject;
-import com.khopan.lazel.packet.BinaryConfigPacket;
+import com.khopan.controlax.action.action.KeyboardAction;
 
 public class TypingZone extends JEditorPane {
 	private static final long serialVersionUID = 7150698209303170531L;
@@ -48,22 +47,14 @@ public class TypingZone extends JEditorPane {
 			@Override
 			public void keyPressed(KeyEvent Event) {
 				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
-					BinaryConfigObject config = new BinaryConfigObject();
-					config.putInt("Action", 7);
-					config.putInt("SubAction", 7);
-					config.putInt("KeyCode", Event.getKeyCode());
-					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+					Controlax.INSTANCE.processor.sendAction(KeyboardAction.getKeyPressed(Event.getKeyCode()));
 				}
 			}
 
 			@Override
 			public void keyReleased(KeyEvent Event) {
 				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
-					BinaryConfigObject config = new BinaryConfigObject();
-					config.putInt("Action", 7);
-					config.putInt("SubAction", 8);
-					config.putInt("KeyCode", Event.getKeyCode());
-					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+					Controlax.INSTANCE.processor.sendAction(KeyboardAction.getKeyReleased(Event.getKeyCode()));
 				}
 			}
 		});

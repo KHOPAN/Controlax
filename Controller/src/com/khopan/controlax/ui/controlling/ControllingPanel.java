@@ -7,10 +7,6 @@ import javax.swing.JCheckBox;
 import javax.swing.JPanel;
 import javax.swing.border.TitledBorder;
 
-import com.khopan.controlax.Controlax;
-import com.khopan.lazel.config.BinaryConfigObject;
-import com.khopan.lazel.packet.BinaryConfigPacket;
-
 public class ControllingPanel extends JPanel {
 	private static final long serialVersionUID = -5323401463653633664L;
 
@@ -28,14 +24,6 @@ public class ControllingPanel extends JPanel {
 		mousePanel.setLayout(new GridLayout(2, 1));
 		this.mouseControlBox = new JCheckBox();
 		this.mouseControlBox.setText("Mouse Control");
-		this.mouseControlBox.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 7);
-			config.putInt("SubAction", 1);
-			config.putBoolean("Control", this.mouseControlBox.isSelected());
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
 		mousePanel.add(this.mouseControlBox);
 		mouseKeyboardPanel.add(mousePanel);
 		JPanel keyboardPanel = new JPanel();
@@ -43,14 +31,6 @@ public class ControllingPanel extends JPanel {
 		keyboardPanel.setLayout(new GridLayout(2, 1));
 		this.keyboardControlBox = new JCheckBox();
 		this.keyboardControlBox.setText("Keyboard Control");
-		this.keyboardControlBox.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 7);
-			config.putInt("SubAction", 2);
-			config.putBoolean("Control", this.keyboardControlBox.isSelected());
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
 		keyboardPanel.add(this.keyboardControlBox);
 		mouseKeyboardPanel.add(keyboardPanel);
 		this.add(mouseKeyboardPanel);

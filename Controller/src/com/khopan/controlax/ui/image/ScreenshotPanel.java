@@ -13,9 +13,9 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.Controlax;
+import com.khopan.controlax.action.action.ScreenshotAction;
+import com.khopan.controlax.action.action.StatusCheckAction;
 import com.khopan.controlax.packet.HeaderedImagePacket;
-import com.khopan.lazel.config.BinaryConfigObject;
-import com.khopan.lazel.packet.BinaryConfigPacket;
 
 public class ScreenshotPanel extends JPanel {
 	private static final long serialVersionUID = -7327805975937257834L;
@@ -37,7 +37,8 @@ public class ScreenshotPanel extends JPanel {
 		this.setLayout(new GridLayout(4, 1));
 		this.statusLabel = new JLabel();
 		this.statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		this.disconnected();
+		this.statusLabel.setText("Status: Undefined");
+		this.statusLabel.setForeground(new Color(0x7F7F7F));
 		this.add(this.statusLabel);
 		this.takeScreenshotButton = new JButton();
 		this.takeScreenshotButton.setText("Take Screenshot");
@@ -53,43 +54,32 @@ public class ScreenshotPanel extends JPanel {
 		this.fullscreenButton.addActionListener(Event -> this.fullscreen.show());
 		this.add(this.fullscreenButton);
 		Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
-			try {
-				if(this.lastResponse) {
-					this.connected();
-				} else {
-					this.disconnected();
-				}
+			String text;
+			int color;
 
-				this.lastResponse = false;
-				BinaryConfigObject config = new BinaryConfigObject();
-				config.putInt("Action", 0);
-				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-			} catch(Throwable Errors) {
-
+			if(this.lastResponse) {
+				text = "Status: Connected";
+				color = 0x00FF00;
+			} else {
+				text = "Status: Disconnected";
+				color = 0xFF0000;
 			}
+
+			this.statusLabel.setText(text);
+			this.statusLabel.setForeground(new Color(color));
+			this.lastResponse = false;
+			Controlax.INSTANCE.processor.sendAction(StatusCheckAction.getInstance());
 		}, 0, 1000, TimeUnit.MILLISECONDS);
 	}
 
 	private void takeScreenshot() {
-		Controlax.INSTANCE.window.status("Taking the screenshot...");
-		BinaryConfigObject config = new BinaryConfigObject();
-		config.putInt("Action", 3);
-		Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+		Controlax.INSTANCE.window.status("Screenshot: Sent");
+		Controlax.INSTANCE.processor.sendAction(ScreenshotAction.getInstance());
 	}
 
 	public void processImagePacket(HeaderedImagePacket packet) {
 		this.screenshot = packet.getImage();
-		Controlax.INSTANCE.window.status("Done taking the screenshot");
+		Controlax.INSTANCE.window.status("Screenshot: Received");
 		this.viewScreenshotButton.setEnabled(true);
-	}
-
-	public void connected() {
-		this.statusLabel.setText("Status: Connected");
-		this.statusLabel.setForeground(new Color(0x00FF00));
-	}
-
-	public void disconnected() {
-		this.statusLabel.setText("Status: Disconnected");
-		this.statusLabel.setForeground(new Color(0xFF0000));
 	}
 }

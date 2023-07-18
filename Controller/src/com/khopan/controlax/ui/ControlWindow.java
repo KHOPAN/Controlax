@@ -25,6 +25,7 @@ import javax.swing.table.DefaultTableModel;
 
 import com.khopan.controlax.Controlax;
 import com.khopan.controlax.Controlax.NetworkEntry;
+import com.khopan.controlax.action.action.ResponseAction;
 import com.khopan.controlax.ui.chat.ChatWindow;
 import com.khopan.controlax.ui.color.ColorPanel;
 import com.khopan.controlax.ui.command.CommandPanel;
@@ -140,7 +141,7 @@ public class ControlWindow {
 				Client client = clientList.get(i);
 
 				if(i == index) {
-					Controlax.INSTANCE.selected = client;
+					Controlax.INSTANCE.client = client;
 					client.packetListener().set(packet -> {
 						Controlax.INSTANCE.processPacket(packet);
 					});
@@ -185,6 +186,7 @@ public class ControlWindow {
 		secondSubPanel.add(this.controllingPanel);
 		panel.add(secondSubPanel);
 		this.frame.add(panel, BorderLayout.CENTER);
+		this.frame.setJMenuBar(new ControlMenuBar());
 		this.frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 		this.frame.setVisible(true);
 	}
@@ -212,5 +214,9 @@ public class ControlWindow {
 	private void putName(String address, String name) {
 		this.config.putString(address, name);
 		BinaryConfig.writeFile(this.config, ControlWindow.CONTROLAX_FILE);
+	}
+
+	public void response(ResponseAction action) {
+		this.status(action.getResponse());
 	}
 }

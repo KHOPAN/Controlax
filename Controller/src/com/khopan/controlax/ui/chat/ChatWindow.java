@@ -13,4 +13,12 @@ public class ChatWindow {
 		this.frame.setSize(600, 400);
 		this.frame.setLocationRelativeTo(null);
 	}
+
+	public void open() {
+		this.frame.setVisible(true);
+	}
+
+	public void close() {
+		this.frame.dispose();
+	}
 }

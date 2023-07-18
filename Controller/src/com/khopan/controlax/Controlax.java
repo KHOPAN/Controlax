@@ -12,29 +12,34 @@ import java.util.regex.Pattern;
 
 import javax.swing.UIManager;
 
+import com.khopan.controlax.action.ActionProcessor;
+import com.khopan.controlax.action.action.ResponseAction;
 import com.khopan.controlax.packet.HeaderedImagePacket;
 import com.khopan.controlax.ui.ControlWindow;
 import com.khopan.controlax.ui.image.ScreenshotPanel;
 import com.khopan.controlax.ui.image.StreamRenderer;
 import com.khopan.lazel.client.Client;
-import com.khopan.lazel.config.BinaryConfigObject;
 import com.khopan.lazel.packet.BinaryConfigPacket;
 import com.khopan.lazel.packet.Packet;
 
 public class Controlax {
 	public static Controlax INSTANCE;
 
+	public final ActionProcessor processor;
+
 	public ControlWindow window;
-	public Client selected;
+	public Client client;
 
 	public Controlax() {
+		this.processor = new ActionProcessor();
 		this.window = new ControlWindow();
+		this.processor.attach(ResponseAction.class, this.window :: response);
 	}
 
 	public void processPacket(Packet packet) {
 		try {
 			BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
-			this.processAction(config.getObject());
+			this.processor.receiveAction(config.getObject());
 		} catch(Throwable Errors) {
 			HeaderedImagePacket imagePacket = packet.getPacket(HeaderedImagePacket.class);
 			byte header = imagePacket.getHeader();
@@ -44,20 +49,6 @@ public class Controlax {
 			} else if(header == StreamRenderer.STREAM_HEADER) {
 				this.window.streamRenderer.processPacket(imagePacket);
 			}
-		}
-	}
-
-	private void processAction(BinaryConfigObject config) {
-		int action = config.getInt("Action");
-
-		if(action == 0) {
-			this.window.screenshotPanel.lastResponse = true;
-		} else if(action == 1) {
-			this.window.commandPanel.processCommand(config);
-		} else if(action == 2) {
-			this.window.status(config.getString("Error"));
-		} else if(action == 5) {
-			this.window.status("Message Sent");
 		}
 	}
 

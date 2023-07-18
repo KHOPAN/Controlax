@@ -53,11 +53,11 @@ public class ColorDisplay {
 		ColorDisplay.DISPLAY.frame.setVisible(true);
 	}
 
-	public static void transparency(float transparency) {
-		ColorDisplay.DISPLAY.frame.setOpacity(transparency);
+	public static void transparency(double transparency) {
+		ColorDisplay.DISPLAY.frame.setOpacity((float) transparency);
 	}
 
-	public static void rainbowRate(float rate) {
+	public static void rainbowRate(double rate) {
 		ColorDisplay.DISPLAY.pane.rate = rate;
 	}
 
@@ -71,11 +71,11 @@ public class ColorDisplay {
 		private int color;
 		private boolean moving;
 
-		private float offset;
-		private float rate;
+		private double offset;
+		private double rate;
 
 		private Pane() {
-			this.rate = 0.0001f;
+			this.rate = 0.0001d;
 
 			Executors.newSingleThreadScheduledExecutor().scheduleAtFixedRate(() -> {
 				this.offset += this.rate;
@@ -107,17 +107,17 @@ public class ColorDisplay {
 				int loop = Math.max(this.width, this.height) + Math.min(this.width, this.height);
 
 				for(int i = 0; i < loop; i++) {
-					float hue = ((float) (((double) i) / ((double) loop))) + (this.moving ? this.offset : 0.0f);
+					double hue = (((double) i) / ((double) loop)) + (this.moving ? this.offset : 0.0f);
 
-					while(hue < 0.0f) {
-						hue += 1.0f;
+					while(hue < 0.0d) {
+						hue += 1.0d;
 					}
 
-					while(hue > 0.0f) {
-						hue -= 1.0f;
+					while(hue > 0.0d) {
+						hue -= 1.0d;
 					}
 
-					Graphics2D.setColor(Color.getHSBColor(hue, 1.0f, 1.0f));
+					Graphics2D.setColor(Color.getHSBColor((float) hue, 1.0f, 1.0f));
 					Graphics2D.drawLine(0, i, i, 0);
 				}
 			}

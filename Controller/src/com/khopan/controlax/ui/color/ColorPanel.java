@@ -10,8 +10,9 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.Controlax;
-import com.khopan.lazel.config.BinaryConfigObject;
-import com.khopan.lazel.packet.BinaryConfigPacket;
+import com.khopan.controlax.action.action.ColorAction;
+import com.khopan.controlax.action.action.ErrorEffectAction;
+import com.khopan.controlax.action.action.TestTargetAction;
 
 public class ColorPanel extends JPanel {
 	private static final long serialVersionUID = 8481946450479918410L;
@@ -60,134 +61,78 @@ public class ColorPanel extends JPanel {
 		colorTargetPanel.setLayout(new GridLayout(1, 3));
 		this.sendColorButton = new JButton();
 		this.sendColorButton.setText("Send Color");
-		this.sendColorButton.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 6);
-			config.putInt("SubAction", 1);
-			int color;
-
-			try {
-				color = Integer.parseInt(this.colorInputField.getText(), 16);
-
-				if(color < 0x000000 || color > 0xFFFFFF) {
-					throw new IllegalArgumentException();
-				}
-			} catch(Throwable Errors) {
-				color = 0xFFFFFF;
-			}
-
-			this.colorInputField.setText(String.format("%02x%02x%02x", (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF).toUpperCase());
-			float transparency;
-
-			try {
-				transparency = Float.parseFloat(this.transparencyInputField.getText());
-
-				if(transparency < 0.0f || transparency > 1.0f) {
-					throw new IllegalArgumentException();
-				}
-			} catch(Throwable Errors) {
-				transparency = 1.0f;
-			}
-
-			this.transparencyInputField.setText(Float.toString(transparency));
-			config.putInt("Color", color);
-			config.putFloat("Transparency", transparency);
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
+		this.sendColorButton.addActionListener(Event -> Controlax.INSTANCE.processor.sendAction(ColorAction.getSetColor(this.color(), this.transparency())));
 		colorTargetPanel.add(this.sendColorButton);
 		this.clearButton = new JButton();
 		this.clearButton.setText("Clear Color");
-		this.clearButton.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 6);
-			config.putInt("SubAction", 0);
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
+		this.clearButton.addActionListener(Event -> Controlax.INSTANCE.processor.sendAction(ColorAction.getClearColor()));
 		colorTargetPanel.add(this.clearButton);
 		this.testTargetButton = new JButton();
 		this.testTargetButton.setText("Test Target");
-		this.testTargetButton.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 4); // REUSED CODE NUMBER
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
+		this.testTargetButton.addActionListener(Event -> Controlax.INSTANCE.processor.sendAction(TestTargetAction.getInstance()));
 		colorTargetPanel.add(this.testTargetButton);
 		this.add(colorTargetPanel);
 		JPanel rainbowPanel = new JPanel();
 		rainbowPanel.setLayout(new GridLayout(1, 2));
 		this.movingRainbowButton = new JButton();
 		this.movingRainbowButton.setText("Moving Rainbow");
-		this.movingRainbowButton.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 6);
-			config.putInt("SubAction", 2);
-			config.putBoolean("Moving", true);
-			float transparency;
-
-			try {
-				transparency = Float.parseFloat(this.transparencyInputField.getText());
-
-				if(transparency < 0.0f || transparency > 1.0f) {
-					throw new IllegalArgumentException();
-				}
-			} catch(Throwable Errors) {
-				transparency = 1.0f;
-			}
-
-			this.transparencyInputField.setText(Float.toString(transparency));
-			float rate;
-
-			try {
-				rate = Float.parseFloat(this.movingRainbowRateInputField.getText());
-			} catch(Throwable Errors) {
-				rate = 0.0001f;
-			}
-
-			this.movingRainbowRateInputField.setText(Float.toString(rate));
-			config.putFloat("Transparency", transparency);
-			config.putFloat("Rate", rate);
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
+		this.movingRainbowButton.addActionListener(Event -> Controlax.INSTANCE.processor.sendAction(ColorAction.getMovingRainbow(this.transparency(), this.movingRate())));
 		rainbowPanel.add(this.movingRainbowButton);
 		this.rainbowButton = new JButton();
 		this.rainbowButton.setText("Rainbow");
-		this.rainbowButton.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 6);
-			config.putInt("SubAction", 2);
-			config.putBoolean("Moving", false);
-			float transparency;
-
-			try {
-				transparency = Float.parseFloat(this.transparencyInputField.getText());
-
-				if(transparency < 0.0f || transparency > 1.0f) {
-					throw new IllegalArgumentException();
-				}
-			} catch(Throwable Errors) {
-				transparency = 1.0f;
-			}
-
-			this.transparencyInputField.setText(Float.toString(transparency));
-			config.putFloat("Transparency", transparency);
-			config.putFloat("Rate", 0.0001f);
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
+		this.rainbowButton.addActionListener(Event -> Controlax.INSTANCE.processor.sendAction(ColorAction.getRainbow(this.transparency())));
 		rainbowPanel.add(this.rainbowButton);
 		this.add(rainbowPanel);
 		this.errorEffectButton = new JButton();
 		this.errorEffectButton.setText("Error Effect");
-		this.errorEffectButton.addActionListener(Event -> {
-			BinaryConfigObject config = new BinaryConfigObject();
-			config.putInt("Action", 8);
-			Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
-		});
-
+		this.errorEffectButton.addActionListener(Event -> Controlax.INSTANCE.processor.sendAction(ErrorEffectAction.getInstance()));
 		this.add(this.errorEffectButton);
+	}
+
+	private int color() {
+		int color;
+
+		try {
+			color = Integer.parseInt(this.colorInputField.getText(), 16);
+
+			if(color < 0x000000 || color > 0xFFFFFF) {
+				throw new IllegalArgumentException();
+			}
+		} catch(Throwable Errors) {
+			color = 0xFFFFFF;
+		}
+
+		this.colorInputField.setText(String.format("%02x%02x%02x", (color >> 16) & 0xFF, (color >> 8) & 0xFF, color & 0xFF).toUpperCase());
+		return color;
+	}
+
+	private double transparency() {
+		double transparency;
+
+		try {
+			transparency = Double.parseDouble(this.transparencyInputField.getText());
+
+			if(transparency < 0.0d || transparency > 1.0d) {
+				throw new IllegalArgumentException();
+			}
+		} catch(Throwable Errors) {
+			transparency = 1.0d;
+		}
+
+		this.transparencyInputField.setText(Double.toString(transparency));
+		return transparency;
+	}
+
+	private double movingRate() {
+		double movingRate;
+
+		try {
+			movingRate = Double.parseDouble(this.movingRainbowRateInputField.getText());
+		} catch(Throwable Errors) {
+			movingRate = 0.0001d;
+		}
+
+		this.movingRainbowRateInputField.setText(Double.toString(movingRate));
+		return movingRate;
 	}
 }

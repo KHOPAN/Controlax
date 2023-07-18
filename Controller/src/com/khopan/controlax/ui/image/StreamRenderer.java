@@ -16,9 +16,9 @@ import java.awt.event.MouseWheelListener;
 import java.awt.image.BufferedImage;
 
 import com.khopan.controlax.Controlax;
+import com.khopan.controlax.action.action.KeyboardAction;
+import com.khopan.controlax.action.action.MouseAction;
 import com.khopan.controlax.packet.HeaderedImagePacket;
-import com.khopan.lazel.config.BinaryConfigObject;
-import com.khopan.lazel.packet.BinaryConfigPacket;
 
 public class StreamRenderer extends Component {
 	private static final long serialVersionUID = 841821419923595603L;
@@ -83,12 +83,7 @@ public class StreamRenderer extends Component {
 		@Override
 		public void mouseMoved(MouseEvent Event) {
 			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
-				BinaryConfigObject config = new BinaryConfigObject();
-				config.putInt("Action", 7);
-				config.putInt("SubAction", 3);
-				config.putDouble("MouseX", ((double) Event.getX()) / ((double) StreamRenderer.this.width));
-				config.putDouble("MouseY", ((double) Event.getY()) / ((double) StreamRenderer.this.height));
-				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.processor.sendAction(MouseAction.getMouseMoved(this.getX(Event.getX()), this.getY(Event.getY())));
 			}
 		}
 
@@ -100,33 +95,21 @@ public class StreamRenderer extends Component {
 		@Override
 		public void mousePressed(MouseEvent Event) {
 			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
-				BinaryConfigObject config = new BinaryConfigObject();
-				config.putInt("Action", 7);
-				config.putInt("SubAction", 4);
-				config.putInt("Button", Event.getButton());
-				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.processor.sendAction(MouseAction.getMousePressed(this.getX(Event.getX()), this.getY(Event.getY()), Event.getButton()));
 			}
 		}
 
 		@Override
 		public void mouseReleased(MouseEvent Event) {
 			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
-				BinaryConfigObject config = new BinaryConfigObject();
-				config.putInt("Action", 7);
-				config.putInt("SubAction", 5);
-				config.putInt("Button", Event.getButton());
-				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.processor.sendAction(MouseAction.getMouseReleased(this.getX(Event.getX()), this.getY(Event.getY()), Event.getButton()));
 			}
 		}
 
 		@Override
 		public void mouseWheelMoved(MouseWheelEvent Event) {
 			if(Controlax.INSTANCE.window.controllingPanel.mouseControlBox.isSelected()) {
-				BinaryConfigObject config = new BinaryConfigObject();
-				config.putInt("Action", 7);
-				config.putInt("SubAction", 6);
-				config.putInt("Amount", Event.getScrollAmount());
-				Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+				Controlax.INSTANCE.processor.sendAction(MouseAction.getMouseWheelMoved(Event.getPreciseWheelRotation()));
 			}
 		}
 
@@ -147,11 +130,7 @@ public class StreamRenderer extends Component {
 				this.pressedF11 = true;
 			} else {
 				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
-					BinaryConfigObject config = new BinaryConfigObject();
-					config.putInt("Action", 7);
-					config.putInt("SubAction", 7);
-					config.putInt("KeyCode", code);
-					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+					Controlax.INSTANCE.processor.sendAction(KeyboardAction.getKeyPressed(code));
 				}
 			}
 		}
@@ -177,11 +156,7 @@ public class StreamRenderer extends Component {
 				}
 			} else {
 				if(Controlax.INSTANCE.window.controllingPanel.keyboardControlBox.isSelected()) {
-					BinaryConfigObject config = new BinaryConfigObject();
-					config.putInt("Action", 7);
-					config.putInt("SubAction", 8);
-					config.putInt("KeyCode", code);
-					Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+					Controlax.INSTANCE.processor.sendAction(KeyboardAction.getKeyReleased(code));
 				}
 			}
 		}
@@ -199,6 +174,14 @@ public class StreamRenderer extends Component {
 		@Override
 		public void mouseExited(MouseEvent Event) {
 			this.mouseMoved(Event);
+		}
+
+		private double getX(int x) {
+			return ((double) x) / ((double) StreamRenderer.this.width);
+		}
+
+		private double getY(int y) {
+			return ((double) y) / ((double) StreamRenderer.this.height);
 		}
 	}
 }

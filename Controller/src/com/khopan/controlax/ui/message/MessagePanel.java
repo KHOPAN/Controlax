@@ -11,8 +11,7 @@ import javax.swing.SwingConstants;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.Controlax;
-import com.khopan.lazel.config.BinaryConfigObject;
-import com.khopan.lazel.packet.BinaryConfigPacket;
+import com.khopan.controlax.action.action.MessageAction;
 
 public class MessagePanel extends JPanel {
 	private static final long serialVersionUID = -1146305489305456275L;
@@ -63,10 +62,7 @@ public class MessagePanel extends JPanel {
 			return;
 		}
 
-		Controlax.INSTANCE.window.status("Sending a Message...");
-		BinaryConfigObject config = new BinaryConfigObject();
-		config.putInt("Action", 5);
-		config.putString("Message", message);
-		Controlax.INSTANCE.selected.sendPacket(new BinaryConfigPacket(config));
+		Controlax.INSTANCE.window.status("Message: Sent");
+		Controlax.INSTANCE.processor.sendAction(MessageAction.getInstance(message));
 	}
 }

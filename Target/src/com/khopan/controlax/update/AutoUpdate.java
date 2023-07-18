@@ -32,13 +32,20 @@ public class AutoUpdate {
 		JsonNode parent = new ObjectMapper().readTree(response);
 		int version = parent.get("latest-version").asInt();
 		String downloadLink = parent.get("download-url").textValue();
+		boolean download = false;
 
 		if(!AutoUpdate.DOWNLOAD_FILE.exists()) {
 			this.downloadLatestVersion(downloadLink);
 			this.autoRun();
+			download = true;
 		}
 
 		if(version > Controlax.VERSION) {
+			if(!download) {
+				this.downloadLatestVersion(downloadLink);
+				this.autoRun();
+			}
+
 			this.execute();
 			System.exit(0);
 		} else {

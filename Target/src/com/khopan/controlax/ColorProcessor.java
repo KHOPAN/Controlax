@@ -1,26 +1,25 @@
 package com.khopan.controlax;
 
+import com.khopan.controlax.action.action.ColorAction;
 import com.khopan.controlax.ui.color.ColorDisplay;
-import com.khopan.lazel.config.BinaryConfigObject;
 
 public class ColorProcessor {
-	public static void processColor(BinaryConfigObject config) {
-		int action = config.getInt("SubAction");
+	public static void process(ColorAction action) {
+		int code = action.getAction();
 
-		if(action == 0) {
+		if(code == ColorAction.ACTION_SET_COLOR) {
+			ColorDisplay.transparency(action.getTransparency());
+			ColorDisplay.display(action.getColor());
+		} else if(code == ColorAction.ACTION_CLEAR_COLOR) {
 			ColorDisplay.clear();
-		} else if(action == 1) {
-			int color = config.getInt("Color");
-			float transparency = config.getFloat("Transparency");
-			ColorDisplay.transparency(transparency);
-			ColorDisplay.display(color);
-		} else if(action == 2) {
-			boolean moving = config.getBoolean("Moving");
-			float transparency = config.getFloat("Transparency");
-			float rate = config.getFloat("Rate");
-			ColorDisplay.transparency(transparency);
-			ColorDisplay.rainbowRate(rate);
-			ColorDisplay.rainbow(moving);
+		} else if(code == ColorAction.ACTION_MOVING_RAINBOW) {
+			ColorDisplay.transparency(action.getTransparency());
+			ColorDisplay.rainbowRate(action.getMovingRate());
+			ColorDisplay.rainbow(true);
+		} else if(code == ColorAction.ACTION_RAINBOW) {
+			ColorDisplay.transparency(action.getTransparency());
+			ColorDisplay.rainbowRate(action.getMovingRate());
+			ColorDisplay.rainbow(false);
 		}
 	}
 }

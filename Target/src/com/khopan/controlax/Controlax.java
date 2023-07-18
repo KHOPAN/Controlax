@@ -12,8 +12,20 @@ import java.util.List;
 
 import javax.swing.JOptionPane;
 
+import com.khopan.controlax.action.ActionProcessor;
+import com.khopan.controlax.action.action.ColorAction;
+import com.khopan.controlax.action.action.CommandAction;
+import com.khopan.controlax.action.action.EmergencyTerminateAction;
+import com.khopan.controlax.action.action.ErrorEffectAction;
+import com.khopan.controlax.action.action.KeyboardAction;
+import com.khopan.controlax.action.action.MessageAction;
+import com.khopan.controlax.action.action.MouseAction;
+import com.khopan.controlax.action.action.PowerAction;
+import com.khopan.controlax.action.action.ScreenshotAction;
+import com.khopan.controlax.action.action.StatusCheckAction;
+import com.khopan.controlax.action.action.TestTargetAction;
+import com.khopan.controlax.ui.message.MessageRenderer;
 import com.khopan.controlax.update.AutoUpdate;
-import com.khopan.lazel.config.BinaryConfigObject;
 import com.khopan.lazel.packet.BinaryConfigPacket;
 import com.khopan.lazel.packet.Packet;
 import com.khopan.lazel.server.ClientProcessor;
@@ -24,6 +36,7 @@ public class Controlax {
 	public static final InetAddress IP_ADDRESS = Controlax.getHost();
 	public static Controlax INSTANCE;
 
+	public final ActionProcessor processor;
 	public final List<ClientProcessor> processorList;
 	public final Server server;
 	public final Robot robot;
@@ -31,6 +44,18 @@ public class Controlax {
 	public Controlax() {
 		ImageProcessor.load();
 		StreamProcessor.load();
+		this.processor = new ActionProcessor();
+		this.processor.attach(ColorAction.class, ColorProcessor :: process);
+		this.processor.attach(CommandAction.class, CommandProcessor :: command);
+		this.processor.attach(PowerAction.class, CommandProcessor :: power);
+		this.processor.attach(MessageAction.class, action -> MessageRenderer.showMessage(action.getMessage()));
+		this.processor.attach(ScreenshotAction.class, ImageProcessor :: process);
+		this.processor.attach(TestTargetAction.class, action -> TargetTester.test());
+		this.processor.attach(ErrorEffectAction.class, action -> ErrorEffect.start());
+		this.processor.attach(EmergencyTerminateAction.class, action -> System.exit(0));
+		this.processor.attach(MouseAction.class, ControllingProcessor :: mouse);
+		this.processor.attach(KeyboardAction.class, ControllingProcessor :: keyboard);
+		this.processor.attach(StatusCheckAction.class, action -> this.processor.sendAction(StatusCheckAction.getInstance()));
 		this.processorList = new ArrayList<>();
 		this.server = new Server();
 		this.server.port().set(2553);
@@ -38,7 +63,7 @@ public class Controlax {
 		this.server.connectionListener().set(processor -> {
 			processor.packetListener().set(packet -> {
 				BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
-				this.processAction(config.getObject());
+				this.processor.receiveAction(config.getObject());
 			});
 
 			this.processorList.add(processor);
@@ -56,34 +81,6 @@ public class Controlax {
 	public void sendPacket(Packet packet) {
 		for(int i = 0; i < this.processorList.size(); i++) {
 			this.processorList.get(i).sendPacket(packet);
-		}
-	}
-
-	private void processAction(BinaryConfigObject config) {
-		int action = config.getInt("Action");
-
-		if(action == -1) {
-			System.exit(0);
-		} else if(action == 0) {
-			BinaryConfigObject object = new BinaryConfigObject();
-			object.putInt("Action", 0);
-			this.sendPacket(new BinaryConfigPacket(object));
-		} else if(action == 1) {
-			CommandProcessor.process(config);
-		} else if(action == 2) {
-			CommandProcessor.processSystem(config);
-		} else if(action == 3) {
-			ImageProcessor.processScreenshot();
-		} else if(action == 4) {
-			TargetTester.test();
-		} else if(action == 5) {
-			MessageProcessor.processMessage(config);
-		} else if(action == 6) {
-			ColorProcessor.processColor(config);
-		} else if(action == 7) {
-			ControllingProcessor.process(config);
-		} else if(action == 8) {
-			ErrorEffect.start();
 		}
 	}
 
