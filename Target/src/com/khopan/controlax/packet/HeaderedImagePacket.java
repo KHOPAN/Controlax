@@ -4,9 +4,11 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 
-import javax.imageio.ImageIO;
-
 import com.khopan.lazel.packet.Packet;
+
+import me.saharnooby.qoi.QOIImage;
+import me.saharnooby.qoi.QOIUtil;
+import me.saharnooby.qoi.QOIUtilAWT;
 
 public class HeaderedImagePacket extends Packet {
 	private final BufferedImage image;
@@ -18,7 +20,8 @@ public class HeaderedImagePacket extends Packet {
 		try {
 			ByteArrayInputStream stream = new ByteArrayInputStream(this.byteArray);
 			this.header = (byte) stream.read();
-			this.image = ImageIO.read(stream);
+			QOIImage qoiImage = QOIUtil.readImage(stream);
+			this.image = QOIUtilAWT.convertToBufferedImage(qoiImage);
 		} catch(Throwable Errors) {
 			throw new InternalError("Error while reading the image", Errors);
 		}
@@ -35,9 +38,10 @@ public class HeaderedImagePacket extends Packet {
 		this.header = header;
 
 		try {
-			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			ByteArrayOutputStream stream = new ByteArrayOutputStream(128);
+			QOIImage qoiImage = QOIUtilAWT.createFromBufferedImage(image);
 			stream.write(this.header);
-			ImageIO.write(image, "png", stream);
+			QOIUtil.writeImage(qoiImage, stream);
 			this.byteArray = stream.toByteArray();
 		} catch(Throwable Errors) {
 			throw new InternalError("Error while converting an image into byte array", Errors);

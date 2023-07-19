@@ -8,9 +8,8 @@ public class StreamProcessor {
 	private long waitTime;
 
 	private StreamProcessor() {
-		this.waitTime = Math.round(1000.0d / ((double) Controlax.getFramerate()));
+		this.waitTime = Math.round(1000.0d / (((double) Controlax.getFramerate()) * 0.166666667d));
 		this.processingThread = new Thread(this :: process);
-		this.processingThread.setPriority(7);
 		this.processingThread.start();
 	}
 
