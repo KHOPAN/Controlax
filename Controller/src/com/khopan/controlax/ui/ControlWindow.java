@@ -186,7 +186,7 @@ public class ControlWindow {
 		secondSubPanel.add(this.controllingPanel);
 		panel.add(secondSubPanel);
 		this.frame.add(panel, BorderLayout.CENTER);
-		this.frame.setJMenuBar(new ControlMenuBar());
+		//this.frame.setJMenuBar(new ControlMenuBar());
 		this.frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 		this.frame.setVisible(true);
 	}
