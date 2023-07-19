@@ -1,16 +1,13 @@
 package com.khopan.controlax.ui;
 
-import java.awt.Color;
-
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 
 public class ControlMenuBar extends JMenuBar {
 	private static final long serialVersionUID = 8255372125439919123L;
 
-	public final JMenuItem testTargetItem;
+	/*public final JMenuItem testTargetItem;
 	public final JMenuItem errorEffectItem;
 	public final JMenuItem sleepItem;
 	public final JMenuItem shutdownItem;
@@ -18,11 +15,13 @@ public class ControlMenuBar extends JMenuBar {
 	public final JMenuItem clearOutputItem;
 	public final JMenuItem emergencyItem;
 	public final JMenuItem openChatItem;
-	public final JMenuItem closeChatItem;
+	public final JMenuItem closeChatItem;*/
+	public final JCheckBoxMenuItem normalToggle;
+	public final JCheckBoxMenuItem errorToggle;
 	public final JCheckBoxMenuItem debugToggle;
 
 	public ControlMenuBar() {
-		JMenu colorMenu = new JMenu();
+		/*JMenu colorMenu = new JMenu();
 		colorMenu.setText("Color");
 		this.testTargetItem = new JMenuItem();
 		this.testTargetItem.setText("Test Target");
@@ -61,12 +60,23 @@ public class ControlMenuBar extends JMenuBar {
 		this.closeChatItem = new JMenuItem();
 		this.closeChatItem.setText("Close Chat");
 		messageMenu.add(this.closeChatItem);
-		this.add(messageMenu);
-		JMenu advancedMenu = new JMenu();
-		advancedMenu.setText("Advanced");
+		this.add(messageMenu);*/
+		JMenu debugMenu = new JMenu();
+		debugMenu.setText("Debug");
+		JMenu outputMenu = new JMenu();
+		outputMenu.setText("Output");
+		this.normalToggle = new JCheckBoxMenuItem();
+		this.normalToggle.setText("Show Normal Output");
+		this.normalToggle.setSelected(true);
+		outputMenu.add(this.normalToggle);
+		this.errorToggle = new JCheckBoxMenuItem();
+		this.errorToggle.setText("Show Error Output");
+		this.errorToggle.setSelected(true);
+		outputMenu.add(this.errorToggle);
 		this.debugToggle = new JCheckBoxMenuItem();
-		this.debugToggle.setText("Debug Mode");
-		advancedMenu.add(this.debugToggle);
-		this.add(advancedMenu);
+		this.debugToggle.setText("Show Debug Output");
+		outputMenu.add(this.debugToggle);
+		debugMenu.add(outputMenu);
+		this.add(debugMenu);
 	}
 }

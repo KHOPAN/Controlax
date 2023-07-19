@@ -1,4 +1,4 @@
-package com.khopan.controlax;
+package com.khopan.controlax.processor;
 
 import java.awt.Graphics2D;
 import java.awt.MouseInfo;
@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 
 import javax.imageio.ImageIO;
 
+import com.khopan.controlax.Controlax;
 import com.khopan.controlax.action.action.ScreenshotAction;
 import com.khopan.controlax.packet.HeaderedImagePacket;
 

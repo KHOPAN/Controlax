@@ -61,11 +61,10 @@ public class MessagePanel extends JPanel {
 		String message = this.messageInputPane.getText();
 
 		if(message == null || message.isEmpty()) {
-			Controlax.INSTANCE.window.status("Error: Empty Message");
+			Controlax.INSTANCE.window.logError("Error: Empty Message");
 			return;
 		}
 
-		Controlax.INSTANCE.window.status("Message: Sent");
 		Controlax.INSTANCE.processor.sendAction(MessageAction.getInstance(message));
 	}
 }

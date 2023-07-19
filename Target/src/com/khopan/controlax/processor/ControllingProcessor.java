@@ -1,8 +1,9 @@
-package com.khopan.controlax;
+package com.khopan.controlax.processor;
 
 import java.awt.Dimension;
 import java.awt.Toolkit;
 
+import com.khopan.controlax.Controlax;
 import com.khopan.controlax.action.action.KeyboardAction;
 import com.khopan.controlax.action.action.MouseAction;
 

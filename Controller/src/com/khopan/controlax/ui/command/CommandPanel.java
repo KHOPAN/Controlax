@@ -94,17 +94,17 @@ public class CommandPanel extends JPanel {
 			String directory = this.directoryField.getText();
 
 			if(command == null || command.isEmpty()) {
-				Controlax.INSTANCE.window.status("Error: Empty Command");
+				Controlax.INSTANCE.window.logError("Error: Empty Command");
 				return;
 			}
 
-			Controlax.INSTANCE.window.status("Command: Sent");
+			Controlax.INSTANCE.window.logNormal("Command: Sent");
 			Controlax.INSTANCE.processor.sendAction(CommandAction.getInstance(directory, command));
 		} catch(Throwable Errors) {
 			StringWriter stringWriter = new StringWriter();
 			PrintWriter printWriter = new PrintWriter(stringWriter);
 			new InternalError("Error while sending a command", Errors).printStackTrace(printWriter);
-			Controlax.INSTANCE.window.status(stringWriter.toString());
+			Controlax.INSTANCE.window.logError(stringWriter.toString());
 		}
 	}
 

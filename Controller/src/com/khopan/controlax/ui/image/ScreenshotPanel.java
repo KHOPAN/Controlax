@@ -73,13 +73,13 @@ public class ScreenshotPanel extends JPanel {
 	}
 
 	private void takeScreenshot() {
-		Controlax.INSTANCE.window.status("Screenshot: Sent");
+		Controlax.INSTANCE.window.logNormal("Screenshot: Sent");
 		Controlax.INSTANCE.processor.sendAction(ScreenshotAction.getInstance());
 	}
 
 	public void processImagePacket(HeaderedImagePacket packet) {
 		this.screenshot = packet.getImage();
-		Controlax.INSTANCE.window.status("Screenshot: Received");
+		Controlax.INSTANCE.window.logNormal("Screenshot: Received");
 		this.viewScreenshotButton.setEnabled(true);
 	}
 }

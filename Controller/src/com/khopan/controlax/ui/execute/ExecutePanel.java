@@ -72,7 +72,7 @@ public class ExecutePanel extends JPanel {
 		String rawPath = this.pathInputField.getText();
 
 		if(rawPath == null || rawPath.isEmpty()) {
-			Controlax.INSTANCE.window.status("Error: Empty Path");
+			Controlax.INSTANCE.window.logError("Error: Empty Path");
 		}
 
 		String rawDestination = this.destinationInputField.getText();
@@ -87,7 +87,7 @@ public class ExecutePanel extends JPanel {
 		if(file.exists()) {
 			Controlax.INSTANCE.client.sendPacket(new FilePacket(file, destination));
 		} else {
-			Controlax.INSTANCE.window.status("Error: File Not Exist");
+			Controlax.INSTANCE.window.logError("Error: File Not Exist");
 		}
 	}
 }

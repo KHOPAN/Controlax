@@ -57,8 +57,10 @@ public class ActionProcessor {
 			throw new NullPointerException("Action cannot be null");
 		}
 
+		Class<? extends Action> actionClass = action.getClass();
+		Controlax.INSTANCE.window.logDebug("Action: " + actionClass.getSimpleName());
 		BinaryConfigObject config = new BinaryConfigObject();
-		config.putString("Name", action.getClass().getName());
+		config.putString("Name", actionClass.getName());
 		action.actionData(config);
 		Controlax.INSTANCE.client.sendPacket(new BinaryConfigPacket(config));
 	}

@@ -1,4 +1,6 @@
-package com.khopan.controlax;
+package com.khopan.controlax.processor;
+
+import com.khopan.controlax.Controlax;
 
 public class StreamProcessor {
 	public static final StreamProcessor INSTANCE = new StreamProcessor();

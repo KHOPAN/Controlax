@@ -55,6 +55,7 @@ public class ControlWindow {
 	public final ScreenshotPanel screenshotPanel;
 	public final ControllingPanel controllingPanel;
 	public final ExecutePanel executePanel;
+	public final ControlMenuBar menuBar;
 
 	private BinaryConfigObject config;
 
@@ -197,7 +198,8 @@ public class ControlWindow {
 		secondSubPanel.add(controllingExecutePanel);
 		panel.add(secondSubPanel);
 		this.frame.add(panel, BorderLayout.CENTER);
-		//this.frame.setJMenuBar(new ControlMenuBar());
+		this.menuBar = new ControlMenuBar();
+		this.frame.setJMenuBar(this.menuBar);
 		this.frame.setExtendedState(Frame.MAXIMIZED_BOTH);
 		this.frame.setVisible(true);
 	}
@@ -206,11 +208,28 @@ public class ControlWindow {
 		StringWriter stringWriter = new StringWriter();
 		PrintWriter printWriter = new PrintWriter(stringWriter);
 		Errors.printStackTrace(printWriter);
-		String text = stringWriter.toString();
-		ControlWindow.this.status(text);
+		this.logError(stringWriter.toString());
 	}
 
-	public void status(String message) {
+	public void logNormal(String message) {
+		if(this.menuBar.normalToggle.isSelected()) {
+			this.append(message);
+		}
+	}
+
+	public void logError(String message) {
+		if(this.menuBar.errorToggle.isSelected()) {			
+			this.append(message);
+		}
+	}
+
+	public void logDebug(String message) {
+		if(this.menuBar.debugToggle.isSelected()) {
+			this.append(message);
+		}
+	}
+
+	private void append(String message) {
 		this.statusPane.setText(this.statusPane.getText() + message + "\n");
 	}
 
@@ -228,6 +247,6 @@ public class ControlWindow {
 	}
 
 	public void response(ResponseAction action) {
-		this.status(action.getResponse());
+		this.logNormal(action.getResponse());
 	}
 }

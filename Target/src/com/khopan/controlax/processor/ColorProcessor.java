@@ -1,4 +1,4 @@
-package com.khopan.controlax;
+package com.khopan.controlax.processor;
 
 import com.khopan.controlax.action.action.ColorAction;
 import com.khopan.controlax.ui.color.ColorDisplay;

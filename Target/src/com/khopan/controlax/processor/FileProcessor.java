@@ -1,4 +1,4 @@
-package com.khopan.controlax;
+package com.khopan.controlax.processor;
 
 import java.awt.Desktop;
 import java.io.File;
@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 
+import com.khopan.controlax.Controlax;
 import com.khopan.controlax.action.action.ResponseAction;
 import com.khopan.controlax.packet.FilePacket;
 
