@@ -37,11 +37,9 @@ public class Controlax {
 	}
 
 	public void processPacket(Packet packet) {
-		try {
-			BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
-			this.processor.receiveAction(config.getObject());
-		} catch(Throwable Errors) {
-			HeaderedImagePacket imagePacket = packet.getPacket(HeaderedImagePacket.class);
+		if(packet instanceof BinaryConfigPacket configPacket) {
+			this.processor.receiveAction(configPacket.getObject());
+		} else if(packet instanceof HeaderedImagePacket imagePacket) {
 			byte header = imagePacket.getHeader();
 
 			if(header == ScreenshotPanel.SCREENSHOT_HEADER) {
@@ -57,7 +55,7 @@ public class Controlax {
 		int lowest = Integer.MAX_VALUE;
 
 		for(int i = 0; i < devices.length; i++) {
-			lowest = Math.min(lowest, devices[0].getDisplayMode().getRefreshRate());
+			lowest = Math.min(lowest, devices[i].getDisplayMode().getRefreshRate());
 		}
 
 		return lowest;
@@ -120,7 +118,7 @@ public class Controlax {
 	}
 
 	public static void main(String[] args) throws Throwable {
-		UIManager.setLookAndFeel("com.sun.java.swing.plaf.windows.WindowsLookAndFeel");
+		UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		Controlax.INSTANCE = new Controlax();
 	}
 }

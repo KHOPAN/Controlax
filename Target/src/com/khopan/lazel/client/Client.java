@@ -5,6 +5,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Constructor;
+import java.net.BindException;
 import java.net.Socket;
 import java.net.SocketException;
 import java.util.ArrayList;
@@ -56,6 +57,10 @@ public class Client {
 				this.outputStream = this.socket.getOutputStream();
 			} catch(Throwable Errors) {
 				// Blank statement, server not found, reconnect again
+
+				if(Errors instanceof BindException) {
+					this.stop();
+				}
 			}
 		}
 

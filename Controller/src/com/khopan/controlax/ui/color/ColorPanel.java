@@ -1,5 +1,6 @@
 package com.khopan.controlax.ui.color;
 
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
@@ -7,6 +8,7 @@ import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.Controlax;
@@ -27,35 +29,38 @@ public class ColorPanel extends JPanel {
 	public final JButton rainbowButton;
 	public final JButton errorEffectButton;
 
-	public ColorPanel() {
+	public ColorPanel(int labelBorder) {
 		this.setBorder(new TitledBorder("Color"));
 		this.setLayout(new GridLayout(6, 1));
 		JPanel colorInputPanel = new JPanel();
-		colorInputPanel.setLayout(new GridLayout(1, 2));
+		colorInputPanel.setLayout(new BorderLayout());
 		JLabel colorInputLabel = new JLabel();
+		colorInputLabel.setBorder(new EmptyBorder(labelBorder, labelBorder, labelBorder, labelBorder));
 		colorInputLabel.setText("Color:");
 		colorInputLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		colorInputPanel.add(colorInputLabel);
+		colorInputPanel.add(colorInputLabel, BorderLayout.WEST);
 		this.colorInputField = new JTextField();
-		colorInputPanel.add(this.colorInputField);
+		colorInputPanel.add(this.colorInputField, BorderLayout.CENTER);
 		this.add(colorInputPanel);
 		JPanel transparencyInputPanel = new JPanel();
-		transparencyInputPanel.setLayout(new GridLayout(1, 2));
+		transparencyInputPanel.setLayout(new BorderLayout());
 		JLabel transparencyInputLabel = new JLabel();
+		transparencyInputLabel.setBorder(new EmptyBorder(labelBorder, labelBorder, labelBorder, labelBorder));
 		transparencyInputLabel.setText("Transparency:");
 		transparencyInputLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		transparencyInputPanel.add(transparencyInputLabel);
+		transparencyInputPanel.add(transparencyInputLabel, BorderLayout.WEST);
 		this.transparencyInputField = new JTextField();
-		transparencyInputPanel.add(this.transparencyInputField);
+		transparencyInputPanel.add(this.transparencyInputField, BorderLayout.CENTER);
 		this.add(transparencyInputPanel);
 		JPanel movingRainbowRateInputPanel = new JPanel();
-		movingRainbowRateInputPanel.setLayout(new GridLayout(1, 2));
+		movingRainbowRateInputPanel.setLayout(new BorderLayout());
 		JLabel movingRainbowRateInputLabel = new JLabel();
+		movingRainbowRateInputLabel.setBorder(new EmptyBorder(labelBorder, labelBorder, labelBorder, labelBorder));
 		movingRainbowRateInputLabel.setText("Rainbow Moving Rate:");
 		movingRainbowRateInputLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		movingRainbowRateInputPanel.add(movingRainbowRateInputLabel);
+		movingRainbowRateInputPanel.add(movingRainbowRateInputLabel, BorderLayout.WEST);
 		this.movingRainbowRateInputField = new JTextField();
-		movingRainbowRateInputPanel.add(this.movingRainbowRateInputField);
+		movingRainbowRateInputPanel.add(this.movingRainbowRateInputField, BorderLayout.CENTER);
 		this.add(movingRainbowRateInputPanel);
 		JPanel colorTargetPanel = new JPanel();
 		colorTargetPanel.setLayout(new GridLayout(1, 3));

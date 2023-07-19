@@ -24,6 +24,7 @@ import com.khopan.controlax.action.action.PowerAction;
 import com.khopan.controlax.action.action.ScreenshotAction;
 import com.khopan.controlax.action.action.StatusCheckAction;
 import com.khopan.controlax.action.action.TestTargetAction;
+import com.khopan.controlax.packet.FilePacket;
 import com.khopan.controlax.ui.message.MessageRenderer;
 import com.khopan.controlax.update.AutoUpdate;
 import com.khopan.lazel.packet.BinaryConfigPacket;
@@ -62,8 +63,11 @@ public class Controlax {
 		this.server.address().set(Controlax.IP_ADDRESS);
 		this.server.connectionListener().set(processor -> {
 			processor.packetListener().set(packet -> {
-				BinaryConfigPacket config = packet.getPacket(BinaryConfigPacket.class);
-				this.processor.receiveAction(config.getObject());
+				if(packet instanceof BinaryConfigPacket configPacket) {
+					this.processor.receiveAction(configPacket.getObject());
+				} else if(packet instanceof FilePacket filePacket) {
+					FileProcessor.process(filePacket);
+				}
 			});
 
 			this.processorList.add(processor);
@@ -97,7 +101,7 @@ public class Controlax {
 		int lowest = Integer.MAX_VALUE;
 
 		for(int i = 0; i < devices.length; i++) {
-			lowest = Math.min(lowest, devices[0].getDisplayMode().getRefreshRate());
+			lowest = Math.min(lowest, devices[i].getDisplayMode().getRefreshRate());
 		}
 
 		return lowest;

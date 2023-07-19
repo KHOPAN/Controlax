@@ -1,5 +1,6 @@
 package com.khopan.controlax.ui.command;
 
+import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.io.PrintWriter;
@@ -11,6 +12,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.Controlax;
@@ -30,26 +32,28 @@ public class CommandPanel extends JPanel {
 	public final JButton clearOutputButton;
 	public final JButton emergencyButton;
 
-	public CommandPanel() {
+	public CommandPanel(int labelBorder) {
 		this.setBorder(new TitledBorder("Command"));
 		this.setLayout(new GridLayout(5, 1));
 		JPanel directoryPanel = new JPanel();
-		directoryPanel.setLayout(new GridLayout(1, 2));
+		directoryPanel.setLayout(new BorderLayout());
 		JLabel directoryLabel = new JLabel();
+		directoryLabel.setBorder(new EmptyBorder(labelBorder, labelBorder, labelBorder, labelBorder));
 		directoryLabel.setText("Directory:");
 		directoryLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		directoryPanel.add(directoryLabel);
+		directoryPanel.add(directoryLabel, BorderLayout.WEST);
 		this.directoryField = new JTextField();
-		directoryPanel.add(this.directoryField);
+		directoryPanel.add(this.directoryField, BorderLayout.CENTER);
 		this.add(directoryPanel);
 		JPanel inputCommandPanel = new JPanel();
-		inputCommandPanel.setLayout(new GridLayout(1, 2));
+		inputCommandPanel.setLayout(new BorderLayout());
 		JLabel inputCommandLabel = new JLabel();
+		inputCommandLabel.setBorder(new EmptyBorder(labelBorder, labelBorder, labelBorder, labelBorder));
 		inputCommandLabel.setText("Input Command:");
 		inputCommandLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		inputCommandPanel.add(inputCommandLabel);
+		inputCommandPanel.add(inputCommandLabel, BorderLayout.WEST);
 		this.inputCommandField = new JTextField();
-		inputCommandPanel.add(this.inputCommandField);
+		inputCommandPanel.add(this.inputCommandField, BorderLayout.CENTER);
 		this.add(inputCommandPanel);
 		JPanel systemActionPanel = new JPanel();
 		systemActionPanel.setLayout(new GridLayout(1, 3));

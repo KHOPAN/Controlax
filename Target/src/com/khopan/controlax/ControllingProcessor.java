@@ -19,6 +19,12 @@ public class ControllingProcessor {
 			int y = (int) Math.round(action.getY() * ((double) ControllingProcessor.DISPLAY_DIMENSION.height));
 			Controlax.INSTANCE.robot.mouseMove(x, y);
 
+			try {
+				Thread.sleep(68);
+			} catch(Throwable Errors) {
+
+			}
+
 			if(code == MouseAction.ACTION_MOUSE_PRESSED) {
 				Controlax.INSTANCE.robot.mousePress(action.getButton());
 			} else if(code == MouseAction.ACTION_MOUSE_PRESSED) {

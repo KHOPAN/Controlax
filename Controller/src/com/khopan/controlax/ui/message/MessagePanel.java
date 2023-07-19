@@ -1,5 +1,6 @@
 package com.khopan.controlax.ui.message;
 
+import java.awt.BorderLayout;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
@@ -8,6 +9,7 @@ import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextPane;
 import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
 import javax.swing.border.TitledBorder;
 
 import com.khopan.controlax.Controlax;
@@ -21,18 +23,19 @@ public class MessagePanel extends JPanel {
 	public final JButton openChatButton;
 	public final JButton closeChatButton;
 
-	public MessagePanel() {
+	public MessagePanel(int labelBorder) {
 		this.setBorder(new TitledBorder("Message"));
 		this.setLayout(new GridLayout(2, 1));
 		JPanel messageInputPanel = new JPanel();
-		messageInputPanel.setLayout(new GridLayout(1, 2));
+		messageInputPanel.setLayout(new BorderLayout());
 		JLabel messageInputLabel = new JLabel();
+		messageInputLabel.setBorder(new EmptyBorder(labelBorder, labelBorder, labelBorder, labelBorder));
 		messageInputLabel.setText("Message:");
 		messageInputLabel.setHorizontalAlignment(SwingConstants.CENTER);
-		messageInputPanel.add(messageInputLabel);
+		messageInputPanel.add(messageInputLabel, BorderLayout.WEST);
 		this.messageInputPane = new JTextPane();
 		JScrollPane messageInputScrollPane = new JScrollPane(this.messageInputPane);
-		messageInputPanel.add(messageInputScrollPane);
+		messageInputPanel.add(messageInputScrollPane, BorderLayout.CENTER);
 		this.add(messageInputPanel);
 		JPanel actionPanel = new JPanel();
 		actionPanel.setLayout(new GridLayout(2, 1));

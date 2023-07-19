@@ -30,6 +30,7 @@ import com.khopan.controlax.ui.chat.ChatWindow;
 import com.khopan.controlax.ui.color.ColorPanel;
 import com.khopan.controlax.ui.command.CommandPanel;
 import com.khopan.controlax.ui.controlling.ControllingPanel;
+import com.khopan.controlax.ui.execute.ExecutePanel;
 import com.khopan.controlax.ui.image.ScreenshotPanel;
 import com.khopan.controlax.ui.image.StreamRenderer;
 import com.khopan.controlax.ui.message.MessagePanel;
@@ -41,8 +42,10 @@ public class ControlWindow {
 	public static final File USER_HOME = new File(System.getProperty("user.home"));
 	public static final File CONTROLAX_FILE = new File(ControlWindow.USER_HOME, "controlax.bcfg");
 
-	public final ChatWindow chatWindow;
+	public final int panelBorder;
+	public final int labelBorder;
 	public final JTextPane statusPane;
+	public final ChatWindow chatWindow;
 	public final JFrame frame;
 	public final JPanel firstSubPanel;
 	public final StreamRenderer streamRenderer;
@@ -51,12 +54,17 @@ public class ControlWindow {
 	public final MessagePanel messagePanel;
 	public final ScreenshotPanel screenshotPanel;
 	public final ControllingPanel controllingPanel;
+	public final ExecutePanel executePanel;
 
 	private BinaryConfigObject config;
 
 	public ControlWindow() {
-		this.chatWindow = new ChatWindow();
+		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
+		double totalSize = (((double) size.width) + ((double) size.height));
+		this.panelBorder = (int) Math.round(totalSize * 0.00937207123d);
+		this.labelBorder = (int) Math.round(totalSize * 0.00468603561d);
 		this.statusPane = new JTextPane();
+		this.chatWindow = new ChatWindow();
 		Thread.setDefaultUncaughtExceptionHandler(new UncaughtExceptionHandler() {
 			@Override
 			public void uncaughtException(Thread thread, Throwable Errors) {
@@ -83,9 +91,7 @@ public class ControlWindow {
 		this.frame.setLayout(new BorderLayout());
 		JPanel panel = new JPanel();
 		panel.setLayout(new GridLayout(1, 2));
-		Dimension size = Toolkit.getDefaultToolkit().getScreenSize();
-		int empty = (int) Math.round((((double) size.width) + ((double) size.height)) * 0.00937207123d);
-		panel.setBorder(new EmptyBorder(empty, empty, empty, empty));
+		panel.setBorder(new EmptyBorder(this.panelBorder, this.panelBorder, this.panelBorder, this.panelBorder));
 		this.firstSubPanel = new JPanel();
 		this.firstSubPanel.setLayout(new GridLayout(2, 1));
 		JPanel ipListStatusPanel = new JPanel();
@@ -170,20 +176,25 @@ public class ControlWindow {
 		secondSubPanel.setLayout(new GridLayout(3, 1));
 		JPanel colorCommandPanel = new JPanel();
 		colorCommandPanel.setLayout(new GridLayout(1, 2));
-		this.colorPanel = new ColorPanel();
+		this.colorPanel = new ColorPanel(this.labelBorder);
 		colorCommandPanel.add(this.colorPanel);
-		this.commandPanel = new CommandPanel();
+		this.commandPanel = new CommandPanel(this.labelBorder);
 		colorCommandPanel.add(this.commandPanel);
 		secondSubPanel.add(colorCommandPanel);
-		JPanel screenshotMessagePanel = new JPanel();
-		screenshotMessagePanel.setLayout(new GridLayout(1, 2));
-		this.messagePanel = new MessagePanel();
-		screenshotMessagePanel.add(this.messagePanel);
+		JPanel messageScreenshotPanel = new JPanel();
+		messageScreenshotPanel.setLayout(new GridLayout(1, 2));
+		this.messagePanel = new MessagePanel(this.labelBorder);
+		messageScreenshotPanel.add(this.messagePanel);
 		this.screenshotPanel = new ScreenshotPanel();
-		screenshotMessagePanel.add(this.screenshotPanel);
-		secondSubPanel.add(screenshotMessagePanel);
+		messageScreenshotPanel.add(this.screenshotPanel);
+		secondSubPanel.add(messageScreenshotPanel);
+		JPanel controllingExecutePanel = new JPanel();
+		controllingExecutePanel.setLayout(new GridLayout(1, 2));
 		this.controllingPanel = new ControllingPanel();
-		secondSubPanel.add(this.controllingPanel);
+		controllingExecutePanel.add(this.controllingPanel);
+		this.executePanel = new ExecutePanel(this.labelBorder);
+		controllingExecutePanel.add(this.executePanel);
+		secondSubPanel.add(controllingExecutePanel);
 		panel.add(secondSubPanel);
 		this.frame.add(panel, BorderLayout.CENTER);
 		//this.frame.setJMenuBar(new ControlMenuBar());

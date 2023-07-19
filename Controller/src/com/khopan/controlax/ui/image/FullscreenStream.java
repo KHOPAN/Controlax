@@ -12,6 +12,8 @@ import javax.swing.WindowConstants;
 import com.khopan.controlax.Controlax;
 
 public class FullscreenStream {
+	public boolean isFullscreen;
+
 	private final JFrame frame;
 
 	public FullscreenStream() {
@@ -31,6 +33,7 @@ public class FullscreenStream {
 	}
 
 	public void show() {
+		this.isFullscreen = true;
 		Controlax.INSTANCE.window.frame.dispose();
 		this.frame.add(Controlax.INSTANCE.window.streamRenderer, BorderLayout.CENTER);
 		this.frame.setVisible(true);
@@ -38,6 +41,7 @@ public class FullscreenStream {
 
 	public void dispose() {
 		if(this.frame.isVisible()) {
+			this.isFullscreen = false;
 			this.frame.dispose();
 			Controlax.INSTANCE.window.firstSubPanel.add(Controlax.INSTANCE.window.streamRenderer);
 			Controlax.INSTANCE.window.frame.setVisible(true);
