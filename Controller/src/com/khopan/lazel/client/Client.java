@@ -4,13 +4,15 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.BindException;
+import java.lang.reflect.Constructor;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.khopan.lazel.ConnectionListener;
 import com.khopan.lazel.ConnectionMessage;
+import com.khopan.lazel.DisconnectionListener;
 import com.khopan.lazel.PacketListener;
 import com.khopan.lazel.config.Converter;
 import com.khopan.lazel.packet.Packet;
@@ -22,28 +24,26 @@ public class Client {
 	private static int Receiver;
 	private static int Processor;
 
-	private final Thread reconnectionThread;
 	private final List<Packet> packetQueue;
 
+	private Thread reconnectionThread;
 	private ConnectionListener connectionListener;
+	private DisconnectionListener disconnectionListener;
 	private PacketListener packetListener;
 	private volatile boolean started;
 	private volatile boolean connected;
 	private volatile boolean established;
+	private volatile boolean packetAvailable;
 	private boolean portSet;
 	private int port;
 	private String host;
 	private Socket socket;
 	private InputStream inputStream;
 	private OutputStream outputStream;
-	private boolean packetAvailable;
 
 	public Client() {
 		this.reconnectionThread = new Thread(this :: reconnectionThread);
 		this.packetQueue = new ArrayList<>();
-		this.started = false;
-		this.connected = false;
-		this.portSet = false;
 		this.host = null;
 	}
 
@@ -55,9 +55,7 @@ public class Client {
 				this.inputStream = this.socket.getInputStream();
 				this.outputStream = this.socket.getOutputStream();
 			} catch(Throwable Errors) {
-				if(Errors instanceof BindException) {
-					this.stop();
-				}
+				// Blank statement, server not found, reconnect again
 			}
 		}
 
@@ -76,7 +74,7 @@ public class Client {
 	}
 
 	private void receiveMessageThread() {
-		while(true) {
+		while(this.connected) {
 			try {
 				byte[] lengthByte = this.inputStream.readNBytes(4);
 
@@ -91,7 +89,7 @@ public class Client {
 
 				if(messageType == ConnectionMessage.TYPE_MESSAGE_NORMAL) {
 					if(this.packetListener != null) {
-						this.packetListener.onPacketReceived(new Packet(stream.readAllBytes()));
+						this.receivePacket(stream.readAllBytes());
 					}
 				} else if(messageType == ConnectionMessage.TYPE_MESSAGE_SPECIAL) {
 					byte messageDirection = (byte) stream.read();
@@ -117,7 +115,29 @@ public class Client {
 					throw new IllegalArgumentException("Invalid message type 0x" + String.format("%02x", messageType).toUpperCase());
 				}
 			} catch(Throwable Errors) {
-				throw new InternalError("Error while receiving packets", Errors);
+				if(Errors instanceof SocketException socket) {
+					String message = socket.getMessage();
+
+					if("Connection reset".equals(message) || "Socket closed".equals(message)) {
+						this.connected = false;
+
+						if(this.disconnectionListener != null) {
+							this.disconnectionListener.disconnected();
+						}
+
+						try {
+							this.inputStream.close();
+							this.outputStream.close();
+							this.socket.close();
+						} catch(Throwable closingErrors) {
+							throw new InternalError("Error while closing streams", closingErrors);
+						}
+					} else {
+						throw new InternalError("Error while receiving packets", Errors);
+					}
+				} else {
+					throw new InternalError("Error while receiving packets", Errors);
+				}
 			}
 		}
 	}
@@ -176,9 +196,12 @@ public class Client {
 		try {
 			if(this.packetAvailable) {
 				byte[] byteArray = packet.getByteArray();
+				byte[] className = packet.getClass().getName().getBytes();
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				stream.write(Converter.intToByte(byteArray.length + 1));
+				stream.write(Converter.intToByte(byteArray.length + className.length + 5));
 				stream.write(ConnectionMessage.TYPE_MESSAGE_NORMAL);
+				stream.write(Converter.intToByte(className.length));
+				stream.write(className);
 				stream.write(byteArray);
 				byte[] data = stream.toByteArray();
 				this.outputStream.write(data);
@@ -187,6 +210,20 @@ public class Client {
 			}
 		} catch(Throwable Errors) {
 			throw new InternalError("Error while sending a packet", Errors);
+		}
+	}
+
+	private void receivePacket(byte[] data) {
+		try {
+			ByteArrayInputStream stream = new ByteArrayInputStream(data);
+			int length = Converter.byteToInt(stream.readNBytes(4));
+			String className = new String(stream.readNBytes(length));
+			data = stream.readAllBytes();
+			Class<?> packetClass = Class.forName(className);
+			Constructor<?> constructor = packetClass.getConstructor(byte[].class);
+			this.packetListener.onPacketReceived((Packet) constructor.newInstance(data));
+		} catch(Throwable Errors) {
+			throw new InternalError("Error while processing packet", Errors);
 		}
 	}
 
@@ -207,6 +244,33 @@ public class Client {
 		this.started = false;
 	}
 
+	public boolean isConnected() {
+		return this.connected;
+	}
+
+	public void reconnect() {
+		try {
+			ByteArrayOutputStream stream = new ByteArrayOutputStream();
+			stream.write(Converter.intToByte(3));
+			stream.write(ConnectionMessage.TYPE_MESSAGE_SPECIAL);
+			stream.write(ConnectionMessage.TYPE_CLIENT_TO_SERVER);
+			stream.write(ConnectionMessage.MESSAGE_DISCONNECT);
+			this.outputStream.write(stream.toByteArray());
+			this.started = false;
+			this.connected = false;
+			this.established = false;
+			this.packetAvailable = false;
+			this.reconnectionThread = new Thread(this :: reconnectionThread);
+			this.inputStream.close();
+			this.outputStream.close();
+			this.socket.close();
+			this.start();
+		} catch(Throwable closingErrors) {
+			throw new InternalError("Error while reconnecting to the server", closingErrors);
+		}
+
+	}
+
 	public Property<Integer, Client> port() {
 		return new SimpleProperty<Integer, Client>(() -> this.port, port -> {
 			this.port = port;
@@ -220,6 +284,10 @@ public class Client {
 
 	public Property<ConnectionListener, Client> connectionListener() {
 		return new SimpleProperty<ConnectionListener, Client>(() -> this.connectionListener, connectionListener -> this.connectionListener = connectionListener, this).nullable();
+	}
+
+	public Property<DisconnectionListener, Client> disconnectionListener() {
+		return new SimpleProperty<DisconnectionListener, Client>(() -> this.disconnectionListener, disconnectionListener -> this.disconnectionListener = disconnectionListener, this).nullable();
 	}
 
 	public Property<PacketListener, Client> packetListener() {

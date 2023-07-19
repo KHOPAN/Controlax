@@ -4,11 +4,14 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.Constructor;
 import java.net.Socket;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.khopan.lazel.ConnectionMessage;
+import com.khopan.lazel.DisconnectionListener;
 import com.khopan.lazel.PacketListener;
 import com.khopan.lazel.config.Converter;
 import com.khopan.lazel.packet.Packet;
@@ -26,6 +29,8 @@ public class ClientProcessor {
 	private final OutputStream outputStream;
 	private final List<Packet> packetQueue;
 	private boolean packetAvailable;
+	private boolean connected;
+	private DisconnectionListener disconnectionListener;
 	private PacketListener packetListener;
 
 	ClientProcessor(Socket socket, Server server, int processorIdentifier) {
@@ -36,6 +41,7 @@ public class ClientProcessor {
 			this.inputStream = this.socket.getInputStream();
 			this.outputStream = this.socket.getOutputStream();
 			this.packetQueue = new ArrayList<>();
+			this.connected = true;
 			Thread receiveMessageThread = new Thread(this :: receiveMessageThread);
 			receiveMessageThread.setPriority(6);
 			ClientProcessor.Receiver++;
@@ -47,7 +53,7 @@ public class ClientProcessor {
 	}
 
 	private void receiveMessageThread() {
-		while(true) {
+		while(this.connected) {
 			try {
 				byte[] lengthByte = this.inputStream.readNBytes(4);
 
@@ -62,7 +68,7 @@ public class ClientProcessor {
 
 				if(messageType == ConnectionMessage.TYPE_MESSAGE_NORMAL) {
 					if(this.packetListener != null) {
-						this.packetListener.onPacketReceived(new Packet(stream.readAllBytes()));
+						this.receivePacket(stream.readAllBytes());
 					}
 				} else if(messageType == ConnectionMessage.TYPE_MESSAGE_SPECIAL) {
 					byte messageDirection = (byte) stream.read();
@@ -79,6 +85,20 @@ public class ClientProcessor {
 							this.outputStream.write(outputStream.toByteArray());
 						} else if(message == ConnectionMessage.MESSAGE_CONNECTED) {
 							this.established();
+						} else if(message == ConnectionMessage.MESSAGE_DISCONNECT) {
+							this.connected = false;
+
+							if(this.disconnectionListener != null) {
+								this.disconnectionListener.disconnected();
+							}
+
+							try {
+								this.inputStream.close();
+								this.outputStream.close();
+								this.socket.close();
+							} catch(Throwable closingErrors) {
+								throw new InternalError("Error while closing streams", closingErrors);
+							}
 						}
 					} else if(messageDirection == ConnectionMessage.TYPE_SERVER_TO_CLIENT) {
 						throw new InternalError("Server: Received a message from server");
@@ -89,7 +109,27 @@ public class ClientProcessor {
 					throw new IllegalArgumentException("Invalid message type 0x" + String.format("%02x", messageType).toUpperCase());
 				}
 			} catch(Throwable Errors) {
-				throw new InternalError("Error while receiving packets", Errors);
+				if(Errors instanceof SocketException socket) {
+					if("Connection reset".equals(socket.getMessage())) {
+						this.connected = false;
+
+						if(this.disconnectionListener != null) {
+							this.disconnectionListener.disconnected();
+						}
+
+						try {
+							this.inputStream.close();
+							this.outputStream.close();
+							this.socket.close();
+						} catch(Throwable closingErrors) {
+							throw new InternalError("Error while closing streams", closingErrors);
+						}
+					} else {
+						throw new InternalError("Error while receiving packets", Errors);
+					}
+				} else {
+					throw new InternalError("Error while receiving packets", Errors);
+				}
 			}
 		}
 	}
@@ -134,9 +174,12 @@ public class ClientProcessor {
 		try {
 			if(this.packetAvailable) {
 				byte[] byteArray = packet.getByteArray();
+				byte[] className = packet.getClass().getName().getBytes();
 				ByteArrayOutputStream stream = new ByteArrayOutputStream();
-				stream.write(Converter.intToByte(byteArray.length + 1));
+				stream.write(Converter.intToByte(byteArray.length + className.length + 5));
 				stream.write(ConnectionMessage.TYPE_MESSAGE_NORMAL);
+				stream.write(Converter.intToByte(className.length));
+				stream.write(className);
 				stream.write(byteArray);
 				byte[] data = stream.toByteArray();
 				this.outputStream.write(data);
@@ -146,6 +189,28 @@ public class ClientProcessor {
 		} catch(Throwable Errors) {
 			throw new InternalError("Error while sending a packet", Errors);
 		}
+	}
+
+	private void receivePacket(byte[] data) {
+		try {
+			ByteArrayInputStream stream = new ByteArrayInputStream(data);
+			int length = Converter.byteToInt(stream.readNBytes(4));
+			String className = new String(stream.readNBytes(length));
+			data = stream.readAllBytes();
+			Class<?> packetClass = Class.forName(className);
+			Constructor<?> constructor = packetClass.getConstructor(byte[].class);
+			this.packetListener.onPacketReceived((Packet) constructor.newInstance(data));
+		} catch(Throwable Errors) {
+			throw new InternalError("Error while processing packet", Errors);
+		}
+	}
+
+	public boolean isConnected() {
+		return this.connected;
+	}
+
+	public Property<DisconnectionListener, ClientProcessor> disconnectionListener() {
+		return new SimpleProperty<DisconnectionListener, ClientProcessor>(() -> this.disconnectionListener, disconnectionListener -> this.disconnectionListener = disconnectionListener, this).nullable();
 	}
 
 	public Property<PacketListener, ClientProcessor> packetListener() {
